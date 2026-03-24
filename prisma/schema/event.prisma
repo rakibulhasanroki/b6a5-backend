@@ -1,0 +1,43 @@
+model Event {
+    id          String   @id @default(uuid())
+    title       String
+    description String
+    date        DateTime
+    time        String
+
+    eventType EventType
+
+    location    String?
+    meetingLink String?
+
+    visibility Visibility
+    fee        Float      @default(0)
+
+    organizerId String
+    organizer   User   @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+
+    isDeleted Boolean   @default(false)
+    deletedAt DateTime?
+
+    bookings    Booking[]
+    invitations Invitation[]
+    reviews     Review[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([title])
+    @@index([organizerId])
+    @@index([date])
+    @@map("events")
+}
+
+enum Visibility {
+    PUBLIC
+    PRIVATE
+}
+
+enum EventType {
+    PHYSICAL
+    ONLINE
+}

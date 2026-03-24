@@ -1,0 +1,19 @@
+model Review {
+    id      String @id @default(uuid())
+    userId  String
+    eventId String
+    rating  Int
+    comment String
+
+    editableUntil DateTime
+
+    user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+    event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+
+    @@unique([userId, eventId])
+    @@index([userId])
+    @@index([eventId])
+    @@map("reviews")
+}

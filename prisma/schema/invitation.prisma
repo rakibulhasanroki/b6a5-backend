@@ -1,0 +1,23 @@
+model Invitation {
+    id            String @id @default(uuid())
+    eventId       String
+    invitedUserId String
+
+    status InvitationStatus
+
+    event       Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+    invitedUser User  @relation("InvitedUser", fields: [invitedUserId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+
+    @@unique([eventId, invitedUserId])
+    @@index([eventId])
+    @@index([invitedUserId])
+    @@map("invitations")
+}
+
+enum InvitationStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+}
