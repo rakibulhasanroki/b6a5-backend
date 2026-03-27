@@ -9,6 +9,31 @@
 * 🟢 You can import this file directly.
 */
 
+export const Role = {
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+} as const
+
+export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const UserStatus = {
+  ACTIVE: 'ACTIVE',
+  BANNED: 'BANNED'
+} as const
+
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
+
+
+export const BookingStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
+
+
 export const Visibility = {
   PUBLIC: 'PUBLIC',
   PRIVATE: 'PRIVATE'
@@ -23,3 +48,20 @@ export const EventType = {
 } as const
 
 export type EventType = (typeof EventType)[keyof typeof EventType]
+
+
+export const InvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  DECLINED: 'DECLINED'
+} as const
+
+export type InvitationStatus = (typeof InvitationStatus)[keyof typeof InvitationStatus]
+
+
+export const PaymentStatus = {
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]

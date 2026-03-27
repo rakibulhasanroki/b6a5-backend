@@ -1,20 +1,34 @@
-import express, { Application, Request, Response } from "express";
+import app from "./app";
+import { envVars } from "./app/config/env";
+import { prisma } from "./app/lib/prisma";
 
-const app: Application = express();
-const port = 5000;
+const port = envVars.PORT || 5000;
 
-// Enable URL-encoded form data parsing
-app.use(express.urlencoded({ extended: true }));
+async function startServer() {
+  try {
+    await prisma.$connect();
+    console.log(" Database connected");
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+    app.listen(port, () => {
+      console.log(` Server running on port ${port}`);
+    });
+  } catch (error) {
+    console.error(" Failed to start server:", error);
+    process.exit(1);
+  }
+}
 
-// Basic route
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, TypeScript + Express!");
+startServer();
+
+// For graceful shutdown
+process.on("SIGINT", async () => {
+  console.log("SIGINT received. Shutting down...");
+  await prisma.$disconnect();
+  process.exit(0);
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received. Shutting down...");
+  await prisma.$disconnect();
+  process.exit(0);
 });
