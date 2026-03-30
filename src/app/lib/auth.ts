@@ -31,6 +31,15 @@ export const auth = betterAuth({
         type: "string",
         required: false,
       },
+      isDeleted: {
+        type: "boolean",
+        defaultValue: false,
+        required: false,
+      },
+      deletedAt: {
+        type: "date",
+        required: false,
+      },
     },
   },
 });
