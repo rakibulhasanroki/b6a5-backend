@@ -6,6 +6,7 @@ import { allowedORigin } from "./app/config";
 import path from "path";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
+import { Routes } from "./app/routes";
 
 const app: Application = express();
 
@@ -37,6 +38,9 @@ if (process.env.NODE_ENV === "development") {
 app.get("/", (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "../../public/index.html"));
 });
+
+// Api routes
+app.use("/api/v1", Routes);
 
 // notFound middleware
 app.use(notFound);

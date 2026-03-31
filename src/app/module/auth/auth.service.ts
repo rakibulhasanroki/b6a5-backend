@@ -21,7 +21,7 @@ const registerUser = async (payload: RegisterPayload) => {
   return data;
 };
 
-const loginUser = async (payload: LoginPayload) => {
+const loginUser = async (payload: LoginPayload, headers: Headers) => {
   const { email, password } = payload;
 
   const data = await auth.api.signInEmail({
@@ -29,9 +29,11 @@ const loginUser = async (payload: LoginPayload) => {
       email,
       password,
     },
+    headers,
+    returnHeaders: true,
   });
 
-  if (!data.user) {
+  if (!data.response?.user) {
     throw new AppError(status.BAD_REQUEST, "Invalid credentials");
   }
 
