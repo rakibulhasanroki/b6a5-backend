@@ -7,6 +7,7 @@ import path from "path";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { Routes } from "./app/routes";
+import { startEventStatusCron } from "./app/corn/eventStatus.corn";
 
 const app: Application = express();
 
@@ -41,6 +42,9 @@ app.get("/", (req: Request, res: Response) => {
 
 // Api routes
 app.use("/api/v1", Routes);
+
+// corn
+startEventStatusCron();
 
 // notFound middleware
 app.use(notFound);

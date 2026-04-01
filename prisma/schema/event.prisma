@@ -1,9 +1,11 @@
 model Event {
-    id          String   @id @default(uuid())
+    id          String @id @default(uuid())
     title       String
     description String
-    date        DateTime
-    time        String
+
+    startDateTime DateTime?
+    endDateTime   DateTime?
+    status        EventStatus @default(UPCOMING)
 
     eventType EventType
 
@@ -28,7 +30,7 @@ model Event {
 
     @@index([title])
     @@index([organizerId])
-    @@index([date])
+    @@index([startDateTime])
     @@map("events")
 }
 
@@ -40,4 +42,10 @@ enum Visibility {
 enum EventType {
     PHYSICAL
     ONLINE
+}
+
+enum EventStatus {
+    UPCOMING
+    ONGOING
+    ENDED
 }

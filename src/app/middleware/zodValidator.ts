@@ -3,10 +3,13 @@ import { z } from "zod";
 import AppError from "../errorHelpers/AppError";
 import status from "http-status";
 
-export const zodValidator = (schema: z.ZodType) => {
+export const zodValidator = (
+  schema: z.ZodType,
+  source: "body" | "query" = "body",
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (typeof req.body?.data === "string") {
+      if (source === "body" && typeof req.body?.data === "string") {
         try {
           req.body = JSON.parse(req.body.data);
         } catch {
@@ -19,13 +22,19 @@ export const zodValidator = (schema: z.ZodType) => {
         }
       }
 
-      const parsedResult = schema.safeParse(req.body);
+      const data = source === "body" ? req.body : req.query;
+
+      const parsedResult = schema.safeParse(data);
 
       if (!parsedResult.success) {
         return next(parsedResult.error);
       }
 
-      req.body = parsedResult.data;
+      if (source === "body") {
+        req.body = parsedResult.data;
+      } else {
+        Object.assign(req.query, parsedResult.data);
+      }
 
       next();
     } catch (error) {
