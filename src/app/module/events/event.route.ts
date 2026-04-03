@@ -1,25 +1,22 @@
 import { Router } from "express";
 import { EventController } from "./event.controller";
 import authCheck from "../../middleware/authCheck";
-import {
-  createEventSchema,
-  updateEventSchema,
-  getEventsQuerySchema,
-} from "./event.validation";
+
 import { zodValidator } from "../../middleware/zodValidator";
+import { EventValidation } from "./event.validation";
 
 const router = Router();
 
 router.post(
   "/",
   authCheck(),
-  zodValidator(createEventSchema),
+  zodValidator(EventValidation.createEventSchema),
   EventController.createEvent,
 );
 
 router.get(
   "/",
-  zodValidator(getEventsQuerySchema, "query"),
+  zodValidator(EventValidation.getEventsQuerySchema, "query"),
   EventController.getEvents,
 );
 
@@ -30,7 +27,7 @@ router.get("/:id", EventController.getSingleEvent);
 router.patch(
   "/:id",
   authCheck(),
-  zodValidator(updateEventSchema),
+  zodValidator(EventValidation.updateEventSchema),
   EventController.updateEvent,
 );
 
