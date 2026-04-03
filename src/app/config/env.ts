@@ -8,6 +8,11 @@ interface EnvConfig {
   DATABASE_URL: string;
   BETTER_AUTH_URL: string;
   BETTER_AUTH_SECRET: string;
+  CLOUDINARY: {
+    CLOUD_NAME: string;
+    API_KEY: string;
+    API_SECRET: string;
+  };
 }
 
 const loadEnv = (): EnvConfig => {
@@ -17,6 +22,9 @@ const loadEnv = (): EnvConfig => {
     "DATABASE_URL",
     "BETTER_AUTH_URL",
     "BETTER_AUTH_SECRET",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
   ];
 
   for (const varName of requiredEnvVars) {
@@ -32,6 +40,11 @@ const loadEnv = (): EnvConfig => {
     DATABASE_URL: process.env.DATABASE_URL as string,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL as string,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET as string,
+    CLOUDINARY: {
+      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
+      API_KEY: process.env.CLOUDINARY_API_KEY as string,
+      API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+    },
   };
 };
 

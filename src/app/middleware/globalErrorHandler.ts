@@ -3,13 +3,15 @@
 
 import { NextFunction, Request, Response } from "express";
 import AppError from "../errorHelpers/AppError";
+import { deleteUploadedFileFromCloudinary } from "../utils/deleteUploadedFileFromCloudinary";
 
-export const globalErrorHandler = (
+export const globalErrorHandler = async (
   err: any,
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
+  await deleteUploadedFileFromCloudinary(req);
   let statusCode: number = 500;
   let message: string = "Something went wrong";
 
