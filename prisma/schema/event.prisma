@@ -12,8 +12,9 @@ model Event {
     location    String?
     meetingLink String?
 
-    visibility Visibility
-    fee        Float      @default(0)
+    visibility      Visibility
+    fee             Float      @default(0)
+    maxParticipants Int?
 
     organizerId String
     organizer   User   @relation(fields: [organizerId], references: [id], onDelete: Cascade)

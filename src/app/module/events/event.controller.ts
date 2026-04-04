@@ -57,6 +57,43 @@ const getSingleEvent = catchAsync(async (req, res) => {
   });
 });
 
+const getAllParticipants = catchAsync(async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
+  }
+
+  const result = await EventService.getAllParticipants(user.id);
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "All participants fetched successfully",
+    data: result,
+  });
+});
+
+const getEventParticipants = catchAsync(async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
+  }
+
+  const eventId = req.params.id;
+
+  const result = await EventService.getEventParticipants(
+    user.id,
+    eventId as string,
+  );
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "Event participants fetched successfully",
+    data: result,
+  });
+});
+
 const updateEvent = catchAsync(async (req, res) => {
   const user = req.user;
   if (!user) {
@@ -98,6 +135,8 @@ export const EventController = {
   getEvents,
   getMyEvents,
   getSingleEvent,
+  getAllParticipants,
+  getEventParticipants,
   updateEvent,
   deleteEvent,
 };

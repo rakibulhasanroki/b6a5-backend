@@ -28,10 +28,12 @@ export type AggregateEvent = {
 
 export type EventAvgAggregateOutputType = {
   fee: number | null
+  maxParticipants: number | null
 }
 
 export type EventSumAggregateOutputType = {
   fee: number | null
+  maxParticipants: number | null
 }
 
 export type EventMinAggregateOutputType = {
@@ -46,6 +48,7 @@ export type EventMinAggregateOutputType = {
   meetingLink: string | null
   visibility: $Enums.Visibility | null
   fee: number | null
+  maxParticipants: number | null
   organizerId: string | null
   isDeleted: boolean | null
   deletedAt: Date | null
@@ -65,6 +68,7 @@ export type EventMaxAggregateOutputType = {
   meetingLink: string | null
   visibility: $Enums.Visibility | null
   fee: number | null
+  maxParticipants: number | null
   organizerId: string | null
   isDeleted: boolean | null
   deletedAt: Date | null
@@ -84,6 +88,7 @@ export type EventCountAggregateOutputType = {
   meetingLink: number
   visibility: number
   fee: number
+  maxParticipants: number
   organizerId: number
   isDeleted: number
   deletedAt: number
@@ -95,10 +100,12 @@ export type EventCountAggregateOutputType = {
 
 export type EventAvgAggregateInputType = {
   fee?: true
+  maxParticipants?: true
 }
 
 export type EventSumAggregateInputType = {
   fee?: true
+  maxParticipants?: true
 }
 
 export type EventMinAggregateInputType = {
@@ -113,6 +120,7 @@ export type EventMinAggregateInputType = {
   meetingLink?: true
   visibility?: true
   fee?: true
+  maxParticipants?: true
   organizerId?: true
   isDeleted?: true
   deletedAt?: true
@@ -132,6 +140,7 @@ export type EventMaxAggregateInputType = {
   meetingLink?: true
   visibility?: true
   fee?: true
+  maxParticipants?: true
   organizerId?: true
   isDeleted?: true
   deletedAt?: true
@@ -151,6 +160,7 @@ export type EventCountAggregateInputType = {
   meetingLink?: true
   visibility?: true
   fee?: true
+  maxParticipants?: true
   organizerId?: true
   isDeleted?: true
   deletedAt?: true
@@ -257,6 +267,7 @@ export type EventGroupByOutputType = {
   meetingLink: string | null
   visibility: $Enums.Visibility
   fee: number
+  maxParticipants: number | null
   organizerId: string
   isDeleted: boolean
   deletedAt: Date | null
@@ -299,6 +310,7 @@ export type EventWhereInput = {
   meetingLink?: Prisma.StringNullableFilter<"Event"> | string | null
   visibility?: Prisma.EnumVisibilityFilter<"Event"> | $Enums.Visibility
   fee?: Prisma.FloatFilter<"Event"> | number
+  maxParticipants?: Prisma.IntNullableFilter<"Event"> | number | null
   organizerId?: Prisma.StringFilter<"Event"> | string
   isDeleted?: Prisma.BoolFilter<"Event"> | boolean
   deletedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -322,6 +334,7 @@ export type EventOrderByWithRelationInput = {
   meetingLink?: Prisma.SortOrderInput | Prisma.SortOrder
   visibility?: Prisma.SortOrder
   fee?: Prisma.SortOrder
+  maxParticipants?: Prisma.SortOrderInput | Prisma.SortOrder
   organizerId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -348,6 +361,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   meetingLink?: Prisma.StringNullableFilter<"Event"> | string | null
   visibility?: Prisma.EnumVisibilityFilter<"Event"> | $Enums.Visibility
   fee?: Prisma.FloatFilter<"Event"> | number
+  maxParticipants?: Prisma.IntNullableFilter<"Event"> | number | null
   organizerId?: Prisma.StringFilter<"Event"> | string
   isDeleted?: Prisma.BoolFilter<"Event"> | boolean
   deletedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -371,6 +385,7 @@ export type EventOrderByWithAggregationInput = {
   meetingLink?: Prisma.SortOrderInput | Prisma.SortOrder
   visibility?: Prisma.SortOrder
   fee?: Prisma.SortOrder
+  maxParticipants?: Prisma.SortOrderInput | Prisma.SortOrder
   organizerId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -398,6 +413,7 @@ export type EventScalarWhereWithAggregatesInput = {
   meetingLink?: Prisma.StringNullableWithAggregatesFilter<"Event"> | string | null
   visibility?: Prisma.EnumVisibilityWithAggregatesFilter<"Event"> | $Enums.Visibility
   fee?: Prisma.FloatWithAggregatesFilter<"Event"> | number
+  maxParticipants?: Prisma.IntNullableWithAggregatesFilter<"Event"> | number | null
   organizerId?: Prisma.StringWithAggregatesFilter<"Event"> | string
   isDeleted?: Prisma.BoolWithAggregatesFilter<"Event"> | boolean
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
@@ -417,6 +433,7 @@ export type EventCreateInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   isDeleted?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -439,6 +456,7 @@ export type EventUncheckedCreateInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   organizerId: string
   isDeleted?: boolean
   deletedAt?: Date | string | null
@@ -461,6 +479,7 @@ export type EventUpdateInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -483,6 +502,7 @@ export type EventUncheckedUpdateInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   organizerId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -505,6 +525,7 @@ export type EventCreateManyInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   organizerId: string
   isDeleted?: boolean
   deletedAt?: Date | string | null
@@ -524,6 +545,7 @@ export type EventUpdateManyMutationInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -542,6 +564,7 @@ export type EventUncheckedUpdateManyInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   organizerId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -576,6 +599,7 @@ export type EventCountOrderByAggregateInput = {
   meetingLink?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
   fee?: Prisma.SortOrder
+  maxParticipants?: Prisma.SortOrder
   organizerId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -585,6 +609,7 @@ export type EventCountOrderByAggregateInput = {
 
 export type EventAvgOrderByAggregateInput = {
   fee?: Prisma.SortOrder
+  maxParticipants?: Prisma.SortOrder
 }
 
 export type EventMaxOrderByAggregateInput = {
@@ -599,6 +624,7 @@ export type EventMaxOrderByAggregateInput = {
   meetingLink?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
   fee?: Prisma.SortOrder
+  maxParticipants?: Prisma.SortOrder
   organizerId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -618,6 +644,7 @@ export type EventMinOrderByAggregateInput = {
   meetingLink?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
   fee?: Prisma.SortOrder
+  maxParticipants?: Prisma.SortOrder
   organizerId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -627,6 +654,7 @@ export type EventMinOrderByAggregateInput = {
 
 export type EventSumOrderByAggregateInput = {
   fee?: Prisma.SortOrder
+  maxParticipants?: Prisma.SortOrder
 }
 
 export type EventCreateNestedManyWithoutOrganizerInput = {
@@ -705,6 +733,14 @@ export type FloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type EventCreateNestedOneWithoutInvitationsInput = {
   create?: Prisma.XOR<Prisma.EventCreateWithoutInvitationsInput, Prisma.EventUncheckedCreateWithoutInvitationsInput>
   connectOrCreate?: Prisma.EventCreateOrConnectWithoutInvitationsInput
@@ -745,6 +781,7 @@ export type EventCreateWithoutOrganizerInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   isDeleted?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -766,6 +803,7 @@ export type EventUncheckedCreateWithoutOrganizerInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   isDeleted?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -816,6 +854,7 @@ export type EventScalarWhereInput = {
   meetingLink?: Prisma.StringNullableFilter<"Event"> | string | null
   visibility?: Prisma.EnumVisibilityFilter<"Event"> | $Enums.Visibility
   fee?: Prisma.FloatFilter<"Event"> | number
+  maxParticipants?: Prisma.IntNullableFilter<"Event"> | number | null
   organizerId?: Prisma.StringFilter<"Event"> | string
   isDeleted?: Prisma.BoolFilter<"Event"> | boolean
   deletedAt?: Prisma.DateTimeNullableFilter<"Event"> | Date | string | null
@@ -835,6 +874,7 @@ export type EventCreateWithoutBookingsInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   isDeleted?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -856,6 +896,7 @@ export type EventUncheckedCreateWithoutBookingsInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   organizerId: string
   isDeleted?: boolean
   deletedAt?: Date | string | null
@@ -893,6 +934,7 @@ export type EventUpdateWithoutBookingsInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -914,6 +956,7 @@ export type EventUncheckedUpdateWithoutBookingsInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   organizerId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -935,6 +978,7 @@ export type EventCreateWithoutInvitationsInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   isDeleted?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -956,6 +1000,7 @@ export type EventUncheckedCreateWithoutInvitationsInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   organizerId: string
   isDeleted?: boolean
   deletedAt?: Date | string | null
@@ -993,6 +1038,7 @@ export type EventUpdateWithoutInvitationsInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1014,6 +1060,7 @@ export type EventUncheckedUpdateWithoutInvitationsInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   organizerId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1035,6 +1082,7 @@ export type EventCreateWithoutReviewsInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   isDeleted?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -1056,6 +1104,7 @@ export type EventUncheckedCreateWithoutReviewsInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   organizerId: string
   isDeleted?: boolean
   deletedAt?: Date | string | null
@@ -1093,6 +1142,7 @@ export type EventUpdateWithoutReviewsInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1114,6 +1164,7 @@ export type EventUncheckedUpdateWithoutReviewsInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   organizerId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1135,6 +1186,7 @@ export type EventCreateManyOrganizerInput = {
   meetingLink?: string | null
   visibility: $Enums.Visibility
   fee?: number
+  maxParticipants?: number | null
   isDeleted?: boolean
   deletedAt?: Date | string | null
   createdAt?: Date | string
@@ -1153,6 +1205,7 @@ export type EventUpdateWithoutOrganizerInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1174,6 +1227,7 @@ export type EventUncheckedUpdateWithoutOrganizerInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1195,6 +1249,7 @@ export type EventUncheckedUpdateManyWithoutOrganizerInput = {
   meetingLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   visibility?: Prisma.EnumVisibilityFieldUpdateOperationsInput | $Enums.Visibility
   fee?: Prisma.FloatFieldUpdateOperationsInput | number
+  maxParticipants?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1262,6 +1317,7 @@ export type EventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   meetingLink?: boolean
   visibility?: boolean
   fee?: boolean
+  maxParticipants?: boolean
   organizerId?: boolean
   isDeleted?: boolean
   deletedAt?: boolean
@@ -1286,6 +1342,7 @@ export type EventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   meetingLink?: boolean
   visibility?: boolean
   fee?: boolean
+  maxParticipants?: boolean
   organizerId?: boolean
   isDeleted?: boolean
   deletedAt?: boolean
@@ -1306,6 +1363,7 @@ export type EventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   meetingLink?: boolean
   visibility?: boolean
   fee?: boolean
+  maxParticipants?: boolean
   organizerId?: boolean
   isDeleted?: boolean
   deletedAt?: boolean
@@ -1326,6 +1384,7 @@ export type EventSelectScalar = {
   meetingLink?: boolean
   visibility?: boolean
   fee?: boolean
+  maxParticipants?: boolean
   organizerId?: boolean
   isDeleted?: boolean
   deletedAt?: boolean
@@ -1333,7 +1392,7 @@ export type EventSelectScalar = {
   updatedAt?: boolean
 }
 
-export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "startDateTime" | "endDateTime" | "status" | "eventType" | "location" | "meetingLink" | "visibility" | "fee" | "organizerId" | "isDeleted" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
+export type EventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "startDateTime" | "endDateTime" | "status" | "eventType" | "location" | "meetingLink" | "visibility" | "fee" | "maxParticipants" | "organizerId" | "isDeleted" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["event"]>
 export type EventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organizer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Event$bookingsArgs<ExtArgs>
@@ -1368,6 +1427,7 @@ export type $EventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     meetingLink: string | null
     visibility: $Enums.Visibility
     fee: number
+    maxParticipants: number | null
     organizerId: string
     isDeleted: boolean
     deletedAt: Date | null
@@ -1811,6 +1871,7 @@ export interface EventFieldRefs {
   readonly meetingLink: Prisma.FieldRef<"Event", 'String'>
   readonly visibility: Prisma.FieldRef<"Event", 'Visibility'>
   readonly fee: Prisma.FieldRef<"Event", 'Float'>
+  readonly maxParticipants: Prisma.FieldRef<"Event", 'Int'>
   readonly organizerId: Prisma.FieldRef<"Event", 'String'>
   readonly isDeleted: Prisma.FieldRef<"Event", 'Boolean'>
   readonly deletedAt: Prisma.FieldRef<"Event", 'DateTime'>

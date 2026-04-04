@@ -14,6 +14,8 @@ export type CreateEventPayload = {
 
   visibility: "PUBLIC" | "PRIVATE";
   fee?: number;
+
+  maxParticipants?: number;
 };
 
 export type UpdateEventPayload = Partial<CreateEventPayload>;

@@ -180,7 +180,6 @@ const getSingleEvent = async (eventId: string) => {
           name: true,
         },
       },
-      reviews: true,
     },
   });
 
@@ -189,6 +188,92 @@ const getSingleEvent = async (eventId: string) => {
   }
 
   return event;
+};
+const getAllParticipants = async (userId: string) => {
+  const events = await prisma.event.findMany({
+    where: {
+      organizerId: userId,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  const eventIds = events.map((e) => e.id);
+
+  if (!eventIds.length) return [];
+
+  const bookings = await prisma.booking.findMany({
+    where: {
+      eventId: {
+        in: eventIds,
+      },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  // ✅ UNIQUE USERS
+  const uniqueMap = new Map();
+
+  for (const booking of bookings) {
+    if (!uniqueMap.has(booking.userId)) {
+      uniqueMap.set(booking.userId, {
+        ...booking.user,
+        latestStatus: booking.status,
+      });
+    }
+  }
+
+  return Array.from(uniqueMap.values());
+};
+
+const getEventParticipants = async (userId: string, eventId: string) => {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+  });
+
+  if (!event || event.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  if (event.organizerId !== userId) {
+    throw new AppError(status.FORBIDDEN, "Not allowed");
+  }
+
+  const participants = await prisma.booking.findMany({
+    where: {
+      eventId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      event: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return participants;
 };
 
 const updateEvent = async (
@@ -314,6 +399,8 @@ export const EventService = {
   getEvents,
   getMyEvents,
   getSingleEvent,
+  getAllParticipants,
+  getEventParticipants,
   updateEvent,
   deleteEvent,
 };

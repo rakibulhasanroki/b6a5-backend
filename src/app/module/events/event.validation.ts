@@ -13,10 +13,15 @@ const baseEventSchema = z.object({
   eventType: z.enum(["PHYSICAL", "ONLINE"]),
 
   location: z.string().min(1, "Location cannot be empty").optional(),
-  meetingLink: z.string().url("Invalid meeting link").optional(),
+  meetingLink: z.url("Invalid meeting link").optional(),
 
   visibility: z.enum(["PUBLIC", "PRIVATE"]),
   fee: z.number().min(0, "Fee cannot be negative").optional(),
+  maxParticipants: z
+    .number()
+    .int()
+    .min(1, "Max participants must be at least 1")
+    .optional(),
 });
 
 const createEventSchema = baseEventSchema.superRefine((data, ctx) => {
