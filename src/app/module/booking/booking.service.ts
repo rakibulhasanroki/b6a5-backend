@@ -1,0 +1,208 @@
+import status from "http-status";
+import AppError from "../../errorHelpers/AppError";
+import { prisma } from "../../lib/prisma";
+import {
+  CreateBookingPayload,
+  UpdateBookingStatusPayload,
+} from "./booking.interface";
+import {
+  BookingStatus,
+  InvitationStatus,
+  Visibility,
+} from "../../../generated/prisma/enums";
+
+const createBooking = async (userId: string, payload: CreateBookingPayload) => {
+  const { eventId, invitationId } = payload;
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+  });
+
+  if (!event || event.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  if (event.organizerId === userId) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Organizer cannot join their own event",
+    );
+  }
+
+  const existingBooking = await prisma.booking.findUnique({
+    where: {
+      userId_eventId: {
+        userId,
+        eventId,
+      },
+    },
+  });
+
+  if (existingBooking) {
+    if (existingBooking.status === BookingStatus.BANNED) {
+      throw new AppError(status.FORBIDDEN, "You are banned from this event");
+    }
+
+    throw new AppError(status.BAD_REQUEST, "You already joined this event");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    let invitation = null;
+
+    if (invitationId) {
+      invitation = await tx.invitation.findUnique({
+        where: { id: invitationId },
+      });
+
+      if (!invitation) {
+        throw new AppError(status.NOT_FOUND, "Invitation not found");
+      }
+
+      if (invitation.invitedUserId !== userId) {
+        throw new AppError(status.FORBIDDEN, "Not allowed");
+      }
+
+      if (invitation.status !== "PENDING") {
+        throw new AppError(status.BAD_REQUEST, "Invitation already used");
+      }
+
+      if (invitation.eventId !== eventId) {
+        throw new AppError(
+          status.BAD_REQUEST,
+          "Invitation does not match event",
+        );
+      }
+    }
+
+    if (event.maxParticipants) {
+      const count = await tx.booking.count({
+        where: {
+          eventId,
+          status: {
+            in: [BookingStatus.PENDING, BookingStatus.CONFIRMED],
+          },
+        },
+      });
+
+      if (count >= event.maxParticipants) {
+        throw new AppError(status.BAD_REQUEST, "Event is full");
+      }
+    }
+
+    if (event.fee > 0) {
+      // TODO: payment service
+    }
+
+    const bookingStatus =
+      event.visibility === Visibility.PUBLIC
+        ? BookingStatus.CONFIRMED
+        : BookingStatus.PENDING;
+
+    const booking = await tx.booking.create({
+      data: {
+        userId,
+        eventId,
+        status: bookingStatus,
+      },
+    });
+
+    if (invitation && invitation.status === "PENDING") {
+      await tx.invitation.update({
+        where: { id: invitation.id },
+        data: {
+          status: InvitationStatus.ACCEPTED,
+        },
+      });
+    }
+
+    return booking;
+  });
+};
+
+const getMyBookings = async (userId: string) => {
+  return prisma.booking.findMany({
+    where: { userId },
+    include: {
+      event: true,
+      payment: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+const getBookingById = async (userId: string, bookingId: string) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      event: true,
+      payment: true,
+    },
+  });
+
+  if (!booking) {
+    throw new AppError(status.NOT_FOUND, "Booking not found");
+  }
+
+  if (booking.userId !== userId) {
+    throw new AppError(status.FORBIDDEN, "Forbidden");
+  }
+
+  return booking;
+};
+
+const updateBookingStatus = async (
+  userId: string,
+  bookingId: string,
+  payload: UpdateBookingStatusPayload,
+) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { event: true },
+  });
+
+  if (!booking) {
+    throw new AppError(status.NOT_FOUND, "Booking not found");
+  }
+
+  const isOrganizer = booking.event.organizerId === userId;
+  const isParticipant = booking.userId === userId;
+
+  if (!isOrganizer && !isParticipant) {
+    throw new AppError(status.FORBIDDEN, "Not allowed");
+  }
+
+  if (isParticipant && !isOrganizer) {
+    if (payload.status !== BookingStatus.CANCELLED) {
+      throw new AppError(status.FORBIDDEN, "You can only cancel your booking");
+    }
+  }
+
+  if (isOrganizer) {
+    if (
+      payload.status !== BookingStatus.CONFIRMED &&
+      payload.status !== BookingStatus.CANCELLED &&
+      payload.status !== BookingStatus.BANNED
+    ) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "Organizer can only confirm, cancel or ban",
+      );
+    }
+  }
+
+  return prisma.booking.update({
+    where: { id: bookingId },
+    data: {
+      status: payload.status,
+    },
+  });
+};
+
+export const BookingService = {
+  createBooking,
+  getMyBookings,
+  getBookingById,
+  updateBookingStatus,
+};

@@ -4,8 +4,7 @@ model Booking {
     userId  String
     eventId String
 
-    status          BookingStatus
-    paymentRequired Boolean       @default(false)
+    status BookingStatus
 
     user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
     event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -24,4 +23,5 @@ enum BookingStatus {
     PENDING
     CONFIRMED
     CANCELLED
+    BANNED
 }
