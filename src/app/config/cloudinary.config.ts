@@ -10,20 +10,28 @@ cloudinary.config({
 export default cloudinary;
 
 //  delete function
-export const deleteFileFromCloudinary = async (url: string) => {
+export const deleteFileFromCloudinary = async (input: string) => {
   try {
-    const regex = /\/v\d+\/(.*?)(?:\.[a-zA-Z0-9]+)?$/;
-    const publicId = url.match(regex)?.[1];
+    let publicId: string | null = null;
+
+    if (input.startsWith("http")) {
+      const regex = /\/v\d+\/(.*?)(?:\.[a-zA-Z0-9]+)?$/;
+      publicId = input.match(regex)?.[1] || null;
+    } else {
+      publicId = input;
+    }
 
     if (!publicId) return;
 
     const resourceTypes = ["image", "raw"];
 
-    for (const type of resourceTypes) {
-      await cloudinary.uploader.destroy(publicId, {
-        resource_type: type,
-      });
-    }
+    await Promise.allSettled(
+      resourceTypes.map((type) =>
+        cloudinary.uploader.destroy(publicId, {
+          resource_type: type,
+        }),
+      ),
+    );
   } catch (error) {
     console.error("Cloudinary delete failed:", error);
   }

@@ -10,6 +10,7 @@ import {
   InvitationStatus,
   Visibility,
 } from "../../../generated/prisma/enums";
+import { PaymentService } from "../payment/payment.service";
 
 const createBooking = async (userId: string, payload: CreateBookingPayload) => {
   const { eventId, invitationId } = payload;
@@ -90,7 +91,16 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
     }
 
     if (event.fee > 0) {
-      // TODO: payment service
+      const paymentSession = await PaymentService.createCheckoutSession({
+        userId,
+        event,
+        invitationId,
+      });
+
+      return {
+        requiresPayment: true,
+        paymentUrl: paymentSession.paymentUrl,
+      };
     }
 
     const bookingStatus =

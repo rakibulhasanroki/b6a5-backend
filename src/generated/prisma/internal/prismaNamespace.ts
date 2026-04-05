@@ -1186,7 +1186,6 @@ export const BookingScalarFieldEnum = {
   userId: 'userId',
   eventId: 'eventId',
   status: 'status',
-  paymentRequired: 'paymentRequired',
   createdAt: 'createdAt'
 } as const
 
@@ -1205,6 +1204,7 @@ export const EventScalarFieldEnum = {
   meetingLink: 'meetingLink',
   visibility: 'visibility',
   fee: 'fee',
+  maxParticipants: 'maxParticipants',
   organizerId: 'organizerId',
   isDeleted: 'isDeleted',
   deletedAt: 'deletedAt',
@@ -1228,11 +1228,15 @@ export type InvitationScalarFieldEnum = (typeof InvitationScalarFieldEnum)[keyof
 
 export const PaymentScalarFieldEnum = {
   id: 'id',
-  bookingId: 'bookingId',
   amount: 'amount',
   gateway: 'gateway',
   transactionId: 'transactionId',
+  invoiceUrl: 'invoiceUrl',
+  stripeEventId: 'stripeEventId',
   status: 'status',
+  bookingId: 'bookingId',
+  eventId: 'eventId',
+  userId: 'userId',
   createdAt: 'createdAt'
 } as const
 
@@ -1416,6 +1420,20 @@ export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMode
 
 
 /**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
  * Reference to a field of type 'InvitationStatus'
  */
 export type EnumInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvitationStatus'>
@@ -1440,20 +1458,6 @@ export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'PaymentStatus[]'
  */
 export type ListEnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 /**

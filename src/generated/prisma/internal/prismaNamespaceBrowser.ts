@@ -147,7 +147,6 @@ export const BookingScalarFieldEnum = {
   userId: 'userId',
   eventId: 'eventId',
   status: 'status',
-  paymentRequired: 'paymentRequired',
   createdAt: 'createdAt'
 } as const
 
@@ -166,6 +165,7 @@ export const EventScalarFieldEnum = {
   meetingLink: 'meetingLink',
   visibility: 'visibility',
   fee: 'fee',
+  maxParticipants: 'maxParticipants',
   organizerId: 'organizerId',
   isDeleted: 'isDeleted',
   deletedAt: 'deletedAt',
@@ -189,11 +189,15 @@ export type InvitationScalarFieldEnum = (typeof InvitationScalarFieldEnum)[keyof
 
 export const PaymentScalarFieldEnum = {
   id: 'id',
-  bookingId: 'bookingId',
   amount: 'amount',
   gateway: 'gateway',
   transactionId: 'transactionId',
+  invoiceUrl: 'invoiceUrl',
+  stripeEventId: 'stripeEventId',
   status: 'status',
+  bookingId: 'bookingId',
+  eventId: 'eventId',
+  userId: 'userId',
   createdAt: 'createdAt'
 } as const
 

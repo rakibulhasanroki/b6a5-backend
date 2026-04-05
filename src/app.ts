@@ -8,8 +8,16 @@ import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { Routes } from "./app/routes";
 import { startEventStatusCron } from "./app/corn/eventStatus.corn";
+import { PaymentController } from "./app/module/payment/payment.controller";
 
 const app: Application = express();
+
+// payment
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  PaymentController.handleStripeWebhookEvent,
+);
 
 // CORS config
 app.use(

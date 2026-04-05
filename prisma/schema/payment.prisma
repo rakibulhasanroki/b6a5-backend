@@ -1,18 +1,22 @@
 model Payment {
     id            String        @id @default(uuid())
-    bookingId     String        @unique
     amount        Float
     gateway       String
     transactionId String
+    invoiceUrl    String?
+    stripeEventId String?
     status        PaymentStatus
 
-    booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+    bookingId String?  @unique
+    booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+    eventId String
+    userId  String
 
     createdAt DateTime @default(now())
 
     @@index([bookingId])
     @@index([transactionId])
-    @@map("payments")
 }
 
 enum PaymentStatus {
