@@ -18,6 +18,11 @@ interface EnvConfig {
     WEBHOOK_SECRET: string;
   };
   FRONTEND_URL: string;
+  BACKEND_URL: string;
+  GOOGLE: {
+    CLIENT_ID: string;
+    CLIENT_SECRET: string;
+  };
 }
 
 const loadEnv = (): EnvConfig => {
@@ -33,6 +38,9 @@ const loadEnv = (): EnvConfig => {
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "FRONTEND_URL",
+    "BACKEND_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
   ];
 
   for (const varName of requiredEnvVars) {
@@ -58,6 +66,11 @@ const loadEnv = (): EnvConfig => {
       WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
     },
     FRONTEND_URL: process.env.FRONTEND_URL as string,
+    BACKEND_URL: process.env.BACKEND_URL as string,
+    GOOGLE: {
+      CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
+      CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
   };
 };
 

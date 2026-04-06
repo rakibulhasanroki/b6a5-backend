@@ -9,8 +9,12 @@ import { notFound } from "./app/middleware/notFound";
 import { Routes } from "./app/routes";
 import { startEventStatusCron } from "./app/corn/eventStatus.corn";
 import { PaymentController } from "./app/module/payment/payment.controller";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./app/lib/auth";
 
 const app: Application = express();
+app.set("view engine", "ejs");
+app.set("views", path.resolve(process.cwd(), `src/app/templates`));
 
 // payment
 app.post(
@@ -33,6 +37,8 @@ app.use(
     contentSecurityPolicy: false,
   }),
 );
+
+app.use("/api/auth", toNodeHandler(auth));
 
 // 📦 Body parsers
 app.use(express.json());

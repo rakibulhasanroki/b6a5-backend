@@ -30,10 +30,6 @@ const authCheck =
         throw new AppError(status.FORBIDDEN, "User is banned or deleted");
       }
 
-      // if (!user.emailVerified) {
-      //   throw new AppError(status.FORBIDDEN, "User email is not verified");
-      // }
-
       if (roles.length && !roles.includes(user.role)) {
         throw new AppError(
           status.FORBIDDEN,

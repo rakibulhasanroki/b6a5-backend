@@ -4,14 +4,8 @@ import { auth } from "../../lib/auth";
 import { LoginPayload, RegisterPayload } from "./auth.interface";
 
 const registerUser = async (payload: RegisterPayload) => {
-  const { name, email, password } = payload;
-
   const data = await auth.api.signUpEmail({
-    body: {
-      name,
-      email,
-      password,
-    },
+    body: payload,
   });
 
   if (!data.user) {
@@ -22,13 +16,8 @@ const registerUser = async (payload: RegisterPayload) => {
 };
 
 const loginUser = async (payload: LoginPayload, headers: Headers) => {
-  const { email, password } = payload;
-
   const data = await auth.api.signInEmail({
-    body: {
-      email,
-      password,
-    },
+    body: payload,
     headers,
     returnHeaders: true,
   });
@@ -40,7 +29,52 @@ const loginUser = async (payload: LoginPayload, headers: Headers) => {
   return data;
 };
 
+const changePassword = async (
+  payload: { currentPassword: string; newPassword: string },
+  headers: Headers,
+) => {
+  await auth.api.changePassword({
+    body: {
+      currentPassword: payload.currentPassword,
+      newPassword: payload.newPassword,
+      revokeOtherSessions: true,
+    },
+    headers,
+  });
+};
+
+const logout = async (headers: Headers) => {
+  await auth.api.signOut({
+    headers,
+  });
+};
+
+const googleCallback = async (headers: Headers) => {
+  const data = await auth.api.getSession({
+    headers,
+    returnHeaders: true,
+  });
+
+  if (!data.response?.user) {
+    throw new AppError(status.UNAUTHORIZED, "Google login failed");
+  }
+
+  if (!data.response.user.emailVerified) {
+    await auth.api.updateUser({
+      body: {
+        emailVerified: true,
+      },
+      headers,
+    });
+  }
+
+  return data;
+};
+
 export const AuthService = {
   registerUser,
   loginUser,
+  changePassword,
+  logout,
+  googleCallback,
 };

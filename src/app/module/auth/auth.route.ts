@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AuthController } from "./auth.controller";
 import { zodValidator } from "../../middleware/zodValidator";
 import { AuthValidation } from "./auth.validation";
+import authCheck from "../../middleware/authCheck";
 
 const router = Router();
 
@@ -10,16 +11,24 @@ router.post(
   zodValidator(AuthValidation.registerSchema),
   AuthController.register,
 );
+
 router.post(
   "/login",
   zodValidator(AuthValidation.loginSchema),
   AuthController.login,
 );
 
-// later:
-// router.post("/verify-email", AuthController.verifyEmail)
-// router.post("/forgot-password", AuthController.forgotPassword)
-// router.post("/reset-password", AuthController.resetPassword)
-// router.post("change-password", AuthController.changePassword)
-// router.post("/logout", AuthController.logout)
-export const AuthRoute = router;
+router.post(
+  "/change-password",
+  authCheck(),
+  zodValidator(AuthValidation.changePasswordSchema),
+  AuthController.changePassword,
+);
+
+router.post("/logout", authCheck(), AuthController.logout);
+
+// Google
+router.get("/google", AuthController.googleLogin);
+router.get("/google/callback", AuthController.googleCallback);
+
+export const AuthRoutes = router;

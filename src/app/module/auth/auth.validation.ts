@@ -33,7 +33,19 @@ const loginSchema = z.object({
   password: passwordField,
 });
 
+const changePasswordSchema = z
+  .object({
+    currentPassword: passwordField,
+
+    newPassword: passwordField,
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password must be different from current password",
+    path: ["newPassword"],
+  });
+
 export const AuthValidation = {
   registerSchema,
   loginSchema,
+  changePasswordSchema,
 };
