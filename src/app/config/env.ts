@@ -23,6 +23,11 @@ interface EnvConfig {
     CLIENT_ID: string;
     CLIENT_SECRET: string;
   };
+  ADMIN: {
+    NAME: string;
+    EMAIL: string;
+    PASSWORD: string;
+  };
 }
 
 const loadEnv = (): EnvConfig => {
@@ -41,6 +46,9 @@ const loadEnv = (): EnvConfig => {
     "BACKEND_URL",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
+    "ADMIN_NAME",
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
   ];
 
   for (const varName of requiredEnvVars) {
@@ -70,6 +78,11 @@ const loadEnv = (): EnvConfig => {
     GOOGLE: {
       CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
       CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+    ADMIN: {
+      NAME: process.env.ADMIN_NAME as string,
+      EMAIL: process.env.ADMIN_EMAIL as string,
+      PASSWORD: process.env.ADMIN_PASSWORD as string,
     },
   };
 };

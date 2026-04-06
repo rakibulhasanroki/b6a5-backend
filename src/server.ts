@@ -1,6 +1,7 @@
 import app from "./app";
 import { envVars } from "./app/config/env";
 import { prisma } from "./app/lib/prisma";
+import { seedAdmin } from "./app/utils/seedAdmin";
 
 const port = envVars.PORT || 5000;
 
@@ -9,6 +10,7 @@ async function startServer() {
     await prisma.$connect();
     console.log(" Database connected");
 
+    await seedAdmin();
     app.listen(port, () => {
       console.log(` Server running on port ${port}`);
     });
