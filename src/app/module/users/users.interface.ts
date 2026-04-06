@@ -4,3 +4,8 @@ export interface IUpdateUserPayload {
   bio?: string;
   image?: string;
 }
+
+export interface IGetUsersQuery {
+  page: number;
+  limit: number;
+}
