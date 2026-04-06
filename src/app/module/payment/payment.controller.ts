@@ -29,6 +29,48 @@ const handleStripeWebhookEvent = catchAsync(async (req, res) => {
   });
 });
 
+const getMyPayments = catchAsync(async (req, res) => {
+  const userId = req.user!.id;
+
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+
+  const result = await PaymentService.getParticipantPayments(userId as string, {
+    page,
+    limit,
+  });
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "Participant payments retrieved successfully",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
+const getOrganizerPayments = catchAsync(async (req, res) => {
+  const userId = req.user!.id;
+
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+
+  const result = await PaymentService.getOrganizerPayments(userId, {
+    page,
+    limit,
+  });
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "Organizer payments retrieved successfully",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
 export const PaymentController = {
   handleStripeWebhookEvent,
+  getMyPayments,
+  getOrganizerPayments,
 };

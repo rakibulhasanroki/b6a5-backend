@@ -8,6 +8,7 @@ import { generateInvoicePdf } from "../../utils/generateInvoicePdf";
 import { uploadBufferToCloudinary } from "../../utils/uploadToCloudinary";
 import { deleteFileFromCloudinary } from "../../config/cloudinary.config";
 import { InvitationStatus } from "../../../generated/prisma/enums";
+import { PaginationOptions } from "./payment.interface";
 
 const createCheckoutSession = async ({
   userId,
@@ -201,7 +202,181 @@ const handleWebhook = async (event: Stripe.Event) => {
   }
 };
 
+const getParticipantPayments = async (
+  userId: string,
+  options: PaginationOptions,
+) => {
+  const page = options.page || 1;
+  const limit = options.limit || 10;
+  const skip = (page - 1) * limit;
+
+  const payments = await prisma.payment.findMany({
+    where: {
+      userId,
+      status: "SUCCESS",
+    },
+    select: {
+      id: true,
+      amount: true,
+      transactionId: true,
+      invoiceUrl: true,
+      createdAt: true,
+      eventId: true,
+      booking: {
+        select: {
+          event: {
+            select: {
+              title: true,
+              startDateTime: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    skip,
+    take: limit,
+  });
+
+  const total = await prisma.payment.count({
+    where: {
+      userId,
+      status: "SUCCESS",
+    },
+  });
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+    data: payments.map((p) => ({
+      paymentId: p.id,
+      amount: p.amount,
+      transactionId: p.transactionId,
+      invoiceUrl: p.invoiceUrl,
+      paidAt: p.createdAt,
+      eventId: p.eventId,
+      eventTitle: p.booking?.event?.title || null,
+      eventDate: p.booking?.event?.startDateTime || null,
+    })),
+  };
+};
+
+const getOrganizerPayments = async (
+  userId: string,
+  options: PaginationOptions,
+) => {
+  const page = options.page || 1;
+  const limit = options.limit || 10;
+  const skip = (page - 1) * limit;
+  const events = await prisma.event.findMany({
+    where: {
+      organizerId: userId,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      title: true,
+    },
+  });
+
+  if (!events.length) {
+    return {
+      meta: { page, limit, total: 0, totalPages: 0 },
+      data: [],
+    };
+  }
+
+  const eventMap = new Map(events.map((e) => [e.id, e.title]));
+  const eventIds = events.map((e) => e.id);
+
+  const payments = await prisma.payment.findMany({
+    where: {
+      eventId: { in: eventIds },
+      status: "SUCCESS",
+    },
+    select: {
+      id: true,
+      amount: true,
+      transactionId: true,
+      invoiceUrl: true,
+      createdAt: true,
+      eventId: true,
+      booking: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    skip,
+    take: limit,
+  });
+
+  const total = await prisma.payment.count({
+    where: {
+      eventId: { in: eventIds },
+      status: "SUCCESS",
+    },
+  });
+
+  const grouped: Record<string, any> = {};
+
+  for (const p of payments) {
+    if (!grouped[p.eventId]) {
+      grouped[p.eventId] = {
+        eventId: p.eventId,
+        eventTitle: eventMap.get(p.eventId) || null,
+        totalRevenue: 0,
+        totalPayments: 0,
+        payments: [],
+      };
+    }
+
+    grouped[p.eventId].totalRevenue += p.amount;
+    grouped[p.eventId].totalPayments += 1;
+
+    grouped[p.eventId].payments.push({
+      paymentId: p.id,
+      amount: p.amount,
+      transactionId: p.transactionId,
+      invoiceUrl: p.invoiceUrl,
+      paidAt: p.createdAt,
+      participant: {
+        id: p.booking?.user?.id || null,
+        name: p.booking?.user?.name || "N/A",
+        email: p.booking?.user?.email || "N/A",
+      },
+    });
+  }
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+    data: Object.values(grouped),
+  };
+};
+
 export const PaymentService = {
   createCheckoutSession,
   handleWebhook,
+  getParticipantPayments,
+  getOrganizerPayments,
 };
