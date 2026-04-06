@@ -7,6 +7,7 @@ import {
 } from "./booking.interface";
 import {
   BookingStatus,
+  EventStatus,
   InvitationStatus,
   Visibility,
 } from "../../../generated/prisma/enums";
@@ -21,6 +22,23 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
 
   if (!event || event.isDeleted) {
     throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+  if (event.status === EventStatus.ENDED) {
+    throw new AppError(status.BAD_REQUEST, "Event has already ended");
+  }
+
+  if (event.status === EventStatus.ONGOING) {
+    throw new AppError(status.BAD_REQUEST, "Event already started");
+  }
+
+  const now = new Date();
+
+  if (event.endDateTime && now > event.endDateTime) {
+    throw new AppError(status.BAD_REQUEST, "Event has already ended");
+  }
+
+  if (event.startDateTime && now >= event.startDateTime) {
+    throw new AppError(status.BAD_REQUEST, "Event already started");
   }
 
   if (event.organizerId === userId) {
@@ -182,10 +200,17 @@ const updateBookingStatus = async (
   if (!isOrganizer && !isParticipant) {
     throw new AppError(status.FORBIDDEN, "Not allowed");
   }
-
+  const isOngoing = booking.event.status === EventStatus.ONGOING;
   if (isParticipant && !isOrganizer) {
     if (payload.status !== BookingStatus.CANCELLED) {
       throw new AppError(status.FORBIDDEN, "You can only cancel your booking");
+    }
+
+    if (isOngoing) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "Cannot cancel booking after event started",
+      );
     }
   }
 
@@ -198,6 +223,13 @@ const updateBookingStatus = async (
       throw new AppError(
         status.BAD_REQUEST,
         "Organizer can only confirm, cancel or ban",
+      );
+    }
+
+    if (isOngoing && payload.status === BookingStatus.CANCELLED) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "Cannot cancel booking after event started",
       );
     }
   }
