@@ -53,11 +53,11 @@ const getEventInvitations = catchAsync(async (req, res) => {
 
 const updateInvitationStatus = catchAsync(async (req, res) => {
   const user = req.user!;
-  const { id } = req.params;
+  const { invitationId } = req.params;
 
   const result = await InvitationService.updateInvitationStatus(
     user.id,
-    id as string,
+    invitationId as string,
     req.body.status,
   );
 

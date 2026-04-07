@@ -19,9 +19,39 @@ const sendInvitation = async (
   if (event.organizerId !== userId) {
     throw new AppError(status.FORBIDDEN, "Not allowed");
   }
+  if (event.visibility === "PUBLIC") {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Invitations are only allowed for private events",
+    );
+  }
 
   if (userId === invitedUserId) {
     throw new AppError(status.BAD_REQUEST, "Cannot invite yourself");
+  }
+  const invitedUser = await prisma.user.findUnique({
+    where: { id: invitedUserId },
+  });
+
+  if (!invitedUser || invitedUser.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  const existingBooking = await prisma.booking.findUnique({
+    where: {
+      userId_eventId: {
+        userId: invitedUserId,
+        eventId,
+      },
+    },
+  });
+
+  if (existingBooking) {
+    if (existingBooking.status === "BANNED") {
+      throw new AppError(status.BAD_REQUEST, "User is banned from this event");
+    }
+
+    throw new AppError(status.BAD_REQUEST, "User already joined this event");
   }
 
   const existing = await prisma.invitation.findUnique({
@@ -35,18 +65,6 @@ const sendInvitation = async (
 
   if (existing) {
     throw new AppError(status.BAD_REQUEST, "User already invited");
-  }
-  const existingBooking = await prisma.booking.findUnique({
-    where: {
-      userId_eventId: {
-        userId: invitedUserId,
-        eventId,
-      },
-    },
-  });
-
-  if (existingBooking) {
-    throw new AppError(status.BAD_REQUEST, "User already joined this event");
   }
 
   return prisma.invitation.create({
@@ -121,10 +139,15 @@ const updateInvitationStatus = async (
 ) => {
   const invitation = await prisma.invitation.findUnique({
     where: { id: invitationId },
+    include: {
+      event: {
+        select: { isDeleted: true },
+      },
+    },
   });
 
-  if (!invitation) {
-    throw new AppError(status.NOT_FOUND, "Invitation not found");
+  if (!invitation || invitation.event.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "Invitation or Event not found");
   }
 
   if (invitation.invitedUserId !== userId) {
@@ -135,7 +158,7 @@ const updateInvitationStatus = async (
     throw new AppError(status.BAD_REQUEST, "Invitation already responded");
   }
 
-  if (statusValue != InvitationStatus.DECLINED) {
+  if (statusValue !== InvitationStatus.DECLINED) {
     throw new AppError(status.BAD_REQUEST, "Only Decline is allowed");
   }
 

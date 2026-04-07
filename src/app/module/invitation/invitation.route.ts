@@ -22,7 +22,7 @@ router.get(
 );
 
 router.patch(
-  "/:id",
+  "/:invitationId",
   authCheck(),
   zodValidator(InvitationValidation.updateInvitationStatusSchema),
   InvitationController.updateInvitationStatus,

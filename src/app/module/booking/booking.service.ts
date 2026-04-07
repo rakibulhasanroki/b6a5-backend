@@ -23,6 +23,12 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
   if (!event || event.isDeleted) {
     throw new AppError(status.NOT_FOUND, "Event not found");
   }
+  if (event.organizerId === userId) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Organizer cannot join their own event",
+    );
+  }
   if (event.status === EventStatus.ENDED) {
     throw new AppError(status.BAD_REQUEST, "Event has already ended");
   }
@@ -39,13 +45,6 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
 
   if (event.startDateTime && now >= event.startDateTime) {
     throw new AppError(status.BAD_REQUEST, "Event already started");
-  }
-
-  if (event.organizerId === userId) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Organizer cannot join their own event",
-    );
   }
 
   const existingBooking = await prisma.booking.findUnique({
@@ -77,19 +76,19 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
         throw new AppError(status.NOT_FOUND, "Invitation not found");
       }
 
-      if (invitation.invitedUserId !== userId) {
-        throw new AppError(status.FORBIDDEN, "Not allowed");
-      }
-
-      if (invitation.status !== "PENDING") {
-        throw new AppError(status.BAD_REQUEST, "Invitation already used");
-      }
-
       if (invitation.eventId !== eventId) {
         throw new AppError(
           status.BAD_REQUEST,
           "Invitation does not match event",
         );
+      }
+
+      if (invitation.invitedUserId !== userId) {
+        throw new AppError(status.FORBIDDEN, "Not allowed");
+      }
+
+      if (invitation.status !== InvitationStatus.PENDING) {
+        throw new AppError(status.BAD_REQUEST, "Invitation already used");
       }
     }
 
@@ -134,7 +133,7 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
       },
     });
 
-    if (invitation && invitation.status === "PENDING") {
+    if (invitation && invitation.status === InvitationStatus.PENDING) {
       await tx.invitation.update({
         where: { id: invitation.id },
         data: {
@@ -149,7 +148,13 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
 
 const getMyBookings = async (userId: string) => {
   return prisma.booking.findMany({
-    where: { userId },
+    where: {
+      userId,
+      event: {
+        isDeleted: false,
+      },
+    },
+
     include: {
       event: true,
       payment: true,
@@ -169,11 +174,11 @@ const getBookingById = async (userId: string, bookingId: string) => {
     },
   });
 
-  if (!booking) {
+  if (!booking || booking.event.isDeleted) {
     throw new AppError(status.NOT_FOUND, "Booking not found");
   }
 
-  if (booking.userId !== userId) {
+  if (booking.userId !== userId && booking.event.organizerId !== userId) {
     throw new AppError(status.FORBIDDEN, "Forbidden");
   }
 
@@ -192,6 +197,16 @@ const updateBookingStatus = async (
 
   if (!booking) {
     throw new AppError(status.NOT_FOUND, "Booking not found");
+  }
+  if (booking.event.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  if (
+    booking.status === BookingStatus.BANNED ||
+    (booking.status === BookingStatus.CANCELLED && booking.userId === userId)
+  ) {
+    throw new AppError(status.BAD_REQUEST, "Cannot modify this booking");
   }
 
   const isOrganizer = booking.event.organizerId === userId;
@@ -242,9 +257,38 @@ const updateBookingStatus = async (
   });
 };
 
+const getEventBookings = async (userId: string, eventId: string) => {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+  });
+
+  if (!event || event.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  if (event.organizerId !== userId) {
+    throw new AppError(status.FORBIDDEN, "Not allowed");
+  }
+
+  return prisma.booking.findMany({
+    where: { eventId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
 export const BookingService = {
   createBooking,
   getMyBookings,
   getBookingById,
   updateBookingStatus,
+  getEventBookings,
 };

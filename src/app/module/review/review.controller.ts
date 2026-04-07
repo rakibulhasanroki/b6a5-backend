@@ -24,7 +24,7 @@ const updateReview = catchAsync(async (req, res) => {
 
   const result = await ReviewService.updateReview(
     user.id,
-    req.params.id as string,
+    req.params.reviewId as string,
     req.body,
   );
 
@@ -40,7 +40,7 @@ const deleteReview = catchAsync(async (req, res) => {
   const user = req.user;
   if (!user) throw new AppError(status.UNAUTHORIZED, "Unauthorized");
 
-  await ReviewService.deleteReview(user.id, req.params.id as string);
+  await ReviewService.deleteReview(user.id, req.params.reviewId as string);
 
   sendResponse(res, {
     httpStatus: status.OK,

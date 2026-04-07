@@ -49,7 +49,7 @@ const getMyEvents = catchAsync(async (req, res) => {
 });
 
 const getSingleEvent = catchAsync(async (req, res) => {
-  const id = req.params.id;
+  const id = req.params.eventId;
   const result = await EventService.getSingleEvent(id as string);
 
   sendResponse(res, {
@@ -82,7 +82,7 @@ const getEventParticipants = catchAsync(async (req, res) => {
     throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
   }
 
-  const eventId = req.params.id;
+  const eventId = req.params.eventId;
 
   const result = await EventService.getEventParticipants(
     user.id,
@@ -103,7 +103,7 @@ const getEventRequests = catchAsync(async (req, res) => {
     throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
   }
 
-  const eventId = req.params.id;
+  const eventId = req.params.eventId;
 
   const result = await EventService.getEventRequests(
     user.id,
@@ -123,7 +123,7 @@ const updateEvent = catchAsync(async (req, res) => {
   if (!user) {
     throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
   }
-  const id = req.params.id;
+  const id = req.params.eventId;
   const result = await EventService.updateEvent(
     user.id,
     id as string,
@@ -143,7 +143,7 @@ const deleteEvent = catchAsync(async (req, res) => {
   if (!user) {
     throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
   }
-  const id = req.params.id;
+  const id = req.params.eventId;
   const result = await EventService.deleteEvent(user.id, id as string);
 
   sendResponse(res, {

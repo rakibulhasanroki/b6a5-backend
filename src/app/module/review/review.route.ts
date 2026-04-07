@@ -12,22 +12,21 @@ router.post(
   zodValidator(ReviewValidation.createReviewSchema),
   ReviewController.createReview,
 );
-
-router.patch(
-  "/:id",
-  authCheck(),
-  zodValidator(ReviewValidation.updateReviewSchema),
-  ReviewController.updateReview,
-);
-
-router.delete("/:id", authCheck(), ReviewController.deleteReview);
-
 router.get(
-  "/:eventId",
+  "/event/:eventId",
   zodValidator(ReviewValidation.getReviewsQuerySchema, "query"),
   ReviewController.getEventReviews,
 );
 
 router.get("/my", authCheck(), ReviewController.getMyReviews);
+
+router.patch(
+  "/:reviewId",
+  authCheck(),
+  zodValidator(ReviewValidation.updateReviewSchema),
+  ReviewController.updateReview,
+);
+
+router.delete("/:reviewId", authCheck(), ReviewController.deleteReview);
 
 export const ReviewRoutes = router;

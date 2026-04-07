@@ -389,6 +389,28 @@ const updateEvent = async (
     }
   }
 
+  const finalEventType = payload.eventType ?? event.eventType;
+
+  const finalLocation =
+    payload.location !== undefined ? payload.location : event.location;
+
+  const finalMeetingLink =
+    payload.meetingLink !== undefined ? payload.meetingLink : event.meetingLink;
+
+  if (finalEventType === "PHYSICAL" && !finalLocation) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Location is required for PHYSICAL event",
+    );
+  }
+
+  if (finalEventType === "ONLINE" && !finalMeetingLink) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Meeting link is required for ONLINE event",
+    );
+  }
+
   const updated = await prisma.event.update({
     where: { id: eventId },
     data: {

@@ -29,9 +29,12 @@ const getMyBookings = catchAsync(async (req, res) => {
 
 const getBookingById = catchAsync(async (req, res) => {
   const user = req.user!;
-  const { id } = req.params;
+  const { bookingId } = req.params;
 
-  const result = await BookingService.getBookingById(user.id, id as string);
+  const result = await BookingService.getBookingById(
+    user.id,
+    bookingId as string,
+  );
 
   sendResponse(res, {
     httpStatus: status.OK,
@@ -43,11 +46,11 @@ const getBookingById = catchAsync(async (req, res) => {
 
 const updateBookingStatus = catchAsync(async (req, res) => {
   const user = req.user!;
-  const { id } = req.params;
+  const { bookingId } = req.params;
 
   const result = await BookingService.updateBookingStatus(
     user.id,
-    id as string,
+    bookingId as string,
     req.body,
   );
 
@@ -59,9 +62,27 @@ const updateBookingStatus = catchAsync(async (req, res) => {
   });
 });
 
+const getEventBookings = catchAsync(async (req, res) => {
+  const user = req.user!;
+  const { eventId } = req.params;
+
+  const result = await BookingService.getEventBookings(
+    user.id,
+    eventId as string,
+  );
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "Event bookings fetched successfully",
+    data: result,
+  });
+});
+
 export const BookingController = {
   createBooking,
   getMyBookings,
   getBookingById,
   updateBookingStatus,
+  getEventBookings,
 };

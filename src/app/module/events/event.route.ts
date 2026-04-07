@@ -27,23 +27,23 @@ router.get(
   EventController.getAllParticipants,
 );
 
-router.get("/:id", EventController.getSingleEvent);
-
 router.get(
-  "/:id/participants",
+  "/:eventId/participants",
   authCheck(),
   EventController.getEventParticipants,
 );
 
-router.get("/:id/requests", authCheck(), EventController.getEventRequests);
+router.get("/:eventId/requests", authCheck(), EventController.getEventRequests);
+
+router.get("/:eventId", EventController.getSingleEvent);
 
 router.patch(
-  "/:id",
+  "/:eventId",
   authCheck(),
   zodValidator(EventValidation.updateEventSchema),
   EventController.updateEvent,
 );
 
-router.delete("/:id", authCheck(), EventController.deleteEvent);
+router.delete("/:eventId", authCheck(), EventController.deleteEvent);
 
 export const EventRoutes = router;

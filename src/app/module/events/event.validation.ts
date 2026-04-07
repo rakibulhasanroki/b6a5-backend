@@ -66,20 +66,20 @@ const createEventSchema = baseEventSchema.superRefine((data, ctx) => {
 
 const updateEventSchema = baseEventSchema.partial().superRefine((data, ctx) => {
   if (data.eventType === "PHYSICAL") {
-    if ("location" in data && !data.location) {
+    if (!data.location) {
       ctx.addIssue({
         code: "custom",
-        message: "Location cannot be empty for PHYSICAL event",
+        message: "Location is required when changing to PHYSICAL event",
         path: ["location"],
       });
     }
   }
 
   if (data.eventType === "ONLINE") {
-    if ("meetingLink" in data && !data.meetingLink) {
+    if (!data.meetingLink) {
       ctx.addIssue({
         code: "custom",
-        message: "Meeting link cannot be empty for ONLINE event",
+        message: "Meeting link is required when changing to ONLINE event",
         path: ["meetingLink"],
       });
     }

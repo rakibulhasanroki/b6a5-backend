@@ -14,14 +14,14 @@ router.post(
 );
 
 router.get("/my", authCheck(), BookingController.getMyBookings);
-
-router.get("/:id", authCheck(), BookingController.getBookingById);
-
+router.get("/event/:eventId", authCheck(), BookingController.getEventBookings);
 router.patch(
-  "/:id/status",
-  zodValidator(BookingValidation.updateBookingStatusSchema),
+  "/:bookingId/status",
   authCheck(),
+  zodValidator(BookingValidation.updateBookingStatusSchema),
   BookingController.updateBookingStatus,
 );
+
+router.get("/:bookingId", authCheck(), BookingController.getBookingById);
 
 export const BookingRoutes = router;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../lib/prisma";
 import { v7 as uuidv7 } from "uuid";
 import { stripe } from "../../config/stripe.config";
@@ -7,8 +6,16 @@ import Stripe from "stripe";
 import { generateInvoicePdf } from "../../utils/generateInvoicePdf";
 import { uploadBufferToCloudinary } from "../../utils/uploadToCloudinary";
 import { deleteFileFromCloudinary } from "../../config/cloudinary.config";
-import { InvitationStatus } from "../../../generated/prisma/enums";
-import { PaginationOptions } from "./payment.interface";
+import {
+  BookingStatus,
+  InvitationStatus,
+  Visibility,
+} from "../../../generated/prisma/enums";
+import {
+  OrganizerPaymentGroup,
+  PaginationOptions,
+  PaymentEventPayload,
+} from "./payment.interface";
 
 const createCheckoutSession = async ({
   userId,
@@ -16,7 +23,7 @@ const createCheckoutSession = async ({
   invitationId,
 }: {
   userId: string;
-  event: any;
+  event: PaymentEventPayload;
   invitationId?: string;
 }) => {
   const transactionId = String(uuidv7());
@@ -84,8 +91,14 @@ const handleWebhook = async (event: Stripe.Event) => {
         where: { id: eventId },
       });
 
-      if (!eventData) return;
+      if (!eventData || eventData.isDeleted) return;
       let uploadedPublicId: string | null = null;
+
+      const paymentExists = await prisma.payment.findUnique({
+        where: { id: paymentId },
+      });
+
+      if (!paymentExists) return;
 
       try {
         await prisma.$transaction(async (tx) => {
@@ -100,7 +113,7 @@ const handleWebhook = async (event: Stripe.Event) => {
               !invitation ||
               invitation.invitedUserId !== userId ||
               invitation.eventId !== eventId ||
-              invitation.status !== "PENDING"
+              invitation.status !== InvitationStatus.PENDING
             ) {
               throw new Error("Invalid invitation during payment");
             }
@@ -127,7 +140,24 @@ const handleWebhook = async (event: Stripe.Event) => {
           }
 
           const bookingStatus =
-            eventData.visibility === "PUBLIC" ? "CONFIRMED" : "PENDING";
+            eventData.visibility === Visibility.PUBLIC
+              ? BookingStatus.CONFIRMED
+              : BookingStatus.PENDING;
+
+          if (eventData.maxParticipants) {
+            const count = await tx.booking.count({
+              where: {
+                eventId,
+                status: {
+                  in: [BookingStatus.PENDING, BookingStatus.CONFIRMED],
+                },
+              },
+            });
+
+            if (count >= eventData.maxParticipants) {
+              throw new Error("Event full during payment");
+            }
+          }
 
           const booking = await tx.booking.create({
             data: {
@@ -137,7 +167,7 @@ const handleWebhook = async (event: Stripe.Event) => {
             },
           });
 
-          if (invitation && invitation.status === "PENDING") {
+          if (invitation && invitation.status === InvitationStatus.PENDING) {
             await tx.invitation.update({
               where: { id: invitation.id },
               data: { status: InvitationStatus.ACCEPTED },
@@ -165,14 +195,18 @@ const handleWebhook = async (event: Stripe.Event) => {
               paymentDate: new Date().toISOString(),
             });
 
-            const publicId = `planora/invoices/invoice-${paymentId}.pdf`;
+            const publicId = `invoice-${paymentId}`;
             uploadedPublicId = publicId;
 
             const upload = await uploadBufferToCloudinary(pdfBuffer, publicId);
 
             invoiceUrl = upload?.secure_url;
           } catch (err) {
-            console.error("Invoice error", err);
+            console.error(
+              "Invoice generation failed for payment:",
+              paymentId,
+              err,
+            );
           }
 
           await tx.payment.update({
@@ -190,12 +224,42 @@ const handleWebhook = async (event: Stripe.Event) => {
           try {
             await deleteFileFromCloudinary(uploadedPublicId);
           } catch (err) {
-            console.error("Cloudinary cleanup failed:", err);
+            console.error(
+              "Cloudinary cleanup failed for payment:",
+              paymentId,
+              err,
+            );
           }
         }
 
         throw error;
       }
+
+      break;
+    }
+    case "checkout.session.expired":
+    case "payment_intent.payment_failed": {
+      let paymentId: string | undefined;
+
+      if (event.type === "checkout.session.expired") {
+        const session = event.data.object as Stripe.Checkout.Session;
+        paymentId = session.metadata?.paymentId;
+      }
+
+      if (event.type === "payment_intent.payment_failed") {
+        const intent = event.data.object as Stripe.PaymentIntent;
+        paymentId = intent.metadata?.paymentId;
+      }
+
+      if (!paymentId || paymentId === "") return;
+
+      await prisma.payment.update({
+        where: { id: paymentId },
+        data: {
+          status: "FAILED",
+          stripeEventId: event.id,
+        },
+      });
 
       break;
     }
@@ -333,7 +397,7 @@ const getOrganizerPayments = async (
     },
   });
 
-  const grouped: Record<string, any> = {};
+  const grouped: Record<string, OrganizerPaymentGroup> = {};
 
   for (const p of payments) {
     if (!grouped[p.eventId]) {
