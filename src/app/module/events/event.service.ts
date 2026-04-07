@@ -2,7 +2,12 @@
 import status from "http-status";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
-import { CreateEventPayload, UpdateEventPayload } from "./event.interface";
+import {
+  CreateEventPayload,
+  IGetEventsQuery,
+  UpdateEventPayload,
+} from "./event.interface";
+import { BookingStatus } from "../../../generated/prisma/enums";
 
 const createEvent = async (userId: string, payload: CreateEventPayload) => {
   const existingEvent = await prisma.event.findFirst({
@@ -39,7 +44,7 @@ const createEvent = async (userId: string, payload: CreateEventPayload) => {
   return event;
 };
 
-const getEvents = async (query: any) => {
+const getEvents = async (query: IGetEventsQuery) => {
   const {
     search,
     visibility,
@@ -49,6 +54,7 @@ const getEvents = async (query: any) => {
     endDate,
     sortBy = "createdAt",
     sortOrder = "asc",
+    status,
     page = 1,
     limit = 10,
   } = query;
@@ -82,16 +88,8 @@ const getEvents = async (query: any) => {
   if (feeType === "FREE") where.fee = 0;
   if (feeType === "PAID") where.fee = { gt: 0 };
 
-  if (query.status === "UPCOMING") {
-    where.status = "UPCOMING";
-  }
-
-  if (query.status === "ONGOING") {
-    where.status = "ONGOING";
-  }
-
-  if (query.status === "ENDED") {
-    where.status = "ENDED";
+  if (status) {
+    where.status = status;
   }
   if (startDate || endDate) {
     where.startDateTime = {
@@ -127,6 +125,7 @@ const getEvents = async (query: any) => {
       page: Number(page),
       limit: Number(limit),
       total,
+      totalPages: Math.ceil(total / Number(limit)),
     },
     data: events,
   };
@@ -162,6 +161,7 @@ const getMyEvents = async (userId: string, query: any) => {
       page: Number(page),
       limit: Number(limit),
       total,
+      totalPages: Math.ceil(total / Number(limit)),
     },
     data: events,
   };
@@ -209,6 +209,9 @@ const getAllParticipants = async (userId: string) => {
       eventId: {
         in: eventIds,
       },
+      status: {
+        notIn: [BookingStatus.CANCELLED, BookingStatus.BANNED],
+      },
     },
     include: {
       user: {
@@ -221,14 +224,12 @@ const getAllParticipants = async (userId: string) => {
     },
   });
 
-  // ✅ UNIQUE USERS
   const uniqueMap = new Map();
 
   for (const booking of bookings) {
     if (!uniqueMap.has(booking.userId)) {
       uniqueMap.set(booking.userId, {
         ...booking.user,
-        latestStatus: booking.status,
       });
     }
   }
@@ -274,6 +275,41 @@ const getEventParticipants = async (userId: string, eventId: string) => {
   });
 
   return participants;
+};
+
+const getEventRequests = async (userId: string, eventId: string) => {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+  });
+
+  if (!event || event.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  if (event.organizerId !== userId) {
+    throw new AppError(status.FORBIDDEN, "Not allowed");
+  }
+
+  const requests = await prisma.booking.findMany({
+    where: {
+      eventId,
+      status: BookingStatus.PENDING,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return requests;
 };
 
 const updateEvent = async (
@@ -394,13 +430,71 @@ const deleteEvent = async (userId: string, eventId: string) => {
   return true;
 };
 
+const getJoinedEvents = async (userId: string, query: any) => {
+  const { page = 1, limit = 10 } = query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const [bookings, total] = await Promise.all([
+    prisma.booking.findMany({
+      where: {
+        userId,
+        event: {
+          isDeleted: false,
+        },
+      },
+      include: {
+        event: {
+          include: {
+            organizer: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: Number(limit),
+    }),
+
+    prisma.booking.count({
+      where: {
+        userId,
+        event: {
+          isDeleted: false,
+        },
+      },
+    }),
+  ]);
+
+  return {
+    meta: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
+    },
+    data: bookings.map((b) => ({
+      ...b.event,
+      bookingStatus: b.status,
+    })),
+  };
+};
+
 export const EventService = {
   createEvent,
   getEvents,
   getMyEvents,
   getSingleEvent,
   getAllParticipants,
+  getEventRequests,
   getEventParticipants,
   updateEvent,
   deleteEvent,
+  getJoinedEvents,
 };

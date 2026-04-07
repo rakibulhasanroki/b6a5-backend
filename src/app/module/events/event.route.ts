@@ -20,6 +20,7 @@ router.get(
 );
 
 router.get("/my", authCheck(), EventController.getMyEvents);
+router.get("/joined", authCheck(), EventController.getJoinedEvents);
 router.get(
   "/participants/all",
   authCheck(),
@@ -33,6 +34,8 @@ router.get(
   authCheck(),
   EventController.getEventParticipants,
 );
+
+router.get("/:id/requests", authCheck(), EventController.getEventRequests);
 
 router.patch(
   "/:id",

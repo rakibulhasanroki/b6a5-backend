@@ -118,8 +118,9 @@ const getEventsQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(50).default(10),
 
-  sortBy: z.enum(["date", "createdAt"]).default("date"),
+  sortBy: z.enum(["startDateTime", "createdAt"]).default("startDateTime"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
+  status: z.enum(["UPCOMING", "ONGOING", "ENDED"]).optional(),
 
   startDate: dateField.optional(),
   endDate: dateField.optional(),

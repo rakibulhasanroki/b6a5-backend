@@ -18,4 +18,23 @@ export type CreateEventPayload = {
   maxParticipants?: number;
 };
 
+export interface IGetEventsQuery {
+  search?: string;
+
+  visibility?: "PUBLIC" | "PRIVATE";
+  feeType?: "FREE" | "PAID";
+  eventType?: "PHYSICAL" | "ONLINE";
+
+  status?: "UPCOMING" | "ONGOING" | "ENDED";
+
+  page: number;
+  limit: number;
+
+  sortBy: "startDateTime" | "createdAt";
+  sortOrder: "asc" | "desc";
+
+  startDate?: string;
+  endDate?: string;
+}
+
 export type UpdateEventPayload = Partial<CreateEventPayload>;

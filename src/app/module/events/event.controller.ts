@@ -3,6 +3,7 @@ import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { EventService } from "./event.service";
 import AppError from "../../errorHelpers/AppError";
+import { IGetEventsQuery } from "./event.interface";
 
 const createEvent = catchAsync(async (req, res) => {
   const user = req.user;
@@ -20,7 +21,9 @@ const createEvent = catchAsync(async (req, res) => {
 });
 
 const getEvents = catchAsync(async (req, res) => {
-  const result = await EventService.getEvents(req.query);
+  const result = await EventService.getEvents(
+    req.query as unknown as IGetEventsQuery,
+  );
 
   sendResponse(res, {
     httpStatus: status.OK,
@@ -94,6 +97,27 @@ const getEventParticipants = catchAsync(async (req, res) => {
   });
 });
 
+const getEventRequests = catchAsync(async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
+  }
+
+  const eventId = req.params.id;
+
+  const result = await EventService.getEventRequests(
+    user.id,
+    eventId as string,
+  );
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "Event pending requests fetched successfully",
+    data: result,
+  });
+});
+
 const updateEvent = catchAsync(async (req, res) => {
   const user = req.user;
   if (!user) {
@@ -130,13 +154,31 @@ const deleteEvent = catchAsync(async (req, res) => {
   });
 });
 
+const getJoinedEvents = catchAsync(async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
+  }
+
+  const result = await EventService.getJoinedEvents(user.id, req.query);
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "Joined events fetched successfully",
+    data: result,
+  });
+});
+
 export const EventController = {
   createEvent,
   getEvents,
   getMyEvents,
   getSingleEvent,
   getAllParticipants,
+  getEventRequests,
   getEventParticipants,
   updateEvent,
   deleteEvent,
+  getJoinedEvents,
 };
