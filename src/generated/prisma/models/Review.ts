@@ -36,32 +36,35 @@ export type ReviewSumAggregateOutputType = {
 
 export type ReviewMinAggregateOutputType = {
   id: string | null
-  userId: string | null
-  eventId: string | null
   rating: number | null
   comment: string | null
   editableUntil: Date | null
+  userId: string | null
+  eventId: string | null
   createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type ReviewMaxAggregateOutputType = {
   id: string | null
-  userId: string | null
-  eventId: string | null
   rating: number | null
   comment: string | null
   editableUntil: Date | null
+  userId: string | null
+  eventId: string | null
   createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type ReviewCountAggregateOutputType = {
   id: number
-  userId: number
-  eventId: number
   rating: number
   comment: number
   editableUntil: number
+  userId: number
+  eventId: number
   createdAt: number
+  updatedAt: number
   _all: number
 }
 
@@ -76,32 +79,35 @@ export type ReviewSumAggregateInputType = {
 
 export type ReviewMinAggregateInputType = {
   id?: true
-  userId?: true
-  eventId?: true
   rating?: true
   comment?: true
   editableUntil?: true
+  userId?: true
+  eventId?: true
   createdAt?: true
+  updatedAt?: true
 }
 
 export type ReviewMaxAggregateInputType = {
   id?: true
-  userId?: true
-  eventId?: true
   rating?: true
   comment?: true
   editableUntil?: true
+  userId?: true
+  eventId?: true
   createdAt?: true
+  updatedAt?: true
 }
 
 export type ReviewCountAggregateInputType = {
   id?: true
-  userId?: true
-  eventId?: true
   rating?: true
   comment?: true
   editableUntil?: true
+  userId?: true
+  eventId?: true
   createdAt?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -193,12 +199,13 @@ export type ReviewGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type ReviewGroupByOutputType = {
   id: string
-  userId: string
-  eventId: string
   rating: number
   comment: string
   editableUntil: Date
+  userId: string
+  eventId: string
   createdAt: Date
+  updatedAt: Date
   _count: ReviewCountAggregateOutputType | null
   _avg: ReviewAvgAggregateOutputType | null
   _sum: ReviewSumAggregateOutputType | null
@@ -226,24 +233,26 @@ export type ReviewWhereInput = {
   OR?: Prisma.ReviewWhereInput[]
   NOT?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
   id?: Prisma.StringFilter<"Review"> | string
-  userId?: Prisma.StringFilter<"Review"> | string
-  eventId?: Prisma.StringFilter<"Review"> | string
   rating?: Prisma.IntFilter<"Review"> | number
   comment?: Prisma.StringFilter<"Review"> | string
   editableUntil?: Prisma.DateTimeFilter<"Review"> | Date | string
+  userId?: Prisma.StringFilter<"Review"> | string
+  eventId?: Prisma.StringFilter<"Review"> | string
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
 }
 
 export type ReviewOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
-  eventId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   editableUntil?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  eventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   event?: Prisma.EventOrderByWithRelationInput
 }
@@ -254,24 +263,26 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
   OR?: Prisma.ReviewWhereInput[]
   NOT?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
-  userId?: Prisma.StringFilter<"Review"> | string
-  eventId?: Prisma.StringFilter<"Review"> | string
   rating?: Prisma.IntFilter<"Review"> | number
   comment?: Prisma.StringFilter<"Review"> | string
   editableUntil?: Prisma.DateTimeFilter<"Review"> | Date | string
+  userId?: Prisma.StringFilter<"Review"> | string
+  eventId?: Prisma.StringFilter<"Review"> | string
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
 }, "id" | "userId_eventId">
 
 export type ReviewOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
-  eventId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   editableUntil?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  eventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.ReviewCountOrderByAggregateInput
   _avg?: Prisma.ReviewAvgOrderByAggregateInput
   _max?: Prisma.ReviewMaxOrderByAggregateInput
@@ -284,12 +295,13 @@ export type ReviewScalarWhereWithAggregatesInput = {
   OR?: Prisma.ReviewScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ReviewScalarWhereWithAggregatesInput | Prisma.ReviewScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Review"> | string
-  userId?: Prisma.StringWithAggregatesFilter<"Review"> | string
-  eventId?: Prisma.StringWithAggregatesFilter<"Review"> | string
   rating?: Prisma.IntWithAggregatesFilter<"Review"> | number
   comment?: Prisma.StringWithAggregatesFilter<"Review"> | string
   editableUntil?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string
+  userId?: Prisma.StringWithAggregatesFilter<"Review"> | string
+  eventId?: Prisma.StringWithAggregatesFilter<"Review"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string
 }
 
 export type ReviewCreateInput = {
@@ -298,18 +310,20 @@ export type ReviewCreateInput = {
   comment: string
   editableUntil: Date | string
   createdAt?: Date | string
+  updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReviewsInput
   event: Prisma.EventCreateNestedOneWithoutReviewsInput
 }
 
 export type ReviewUncheckedCreateInput = {
   id?: string
-  userId: string
-  eventId: string
   rating: number
   comment: string
   editableUntil: Date | string
+  userId: string
+  eventId: string
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type ReviewUpdateInput = {
@@ -318,28 +332,31 @@ export type ReviewUpdateInput = {
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
   event?: Prisma.EventUpdateOneRequiredWithoutReviewsNestedInput
 }
 
 export type ReviewUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
-  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ReviewCreateManyInput = {
   id?: string
-  userId: string
-  eventId: string
   rating: number
   comment: string
   editableUntil: Date | string
+  userId: string
+  eventId: string
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type ReviewUpdateManyMutationInput = {
@@ -348,16 +365,18 @@ export type ReviewUpdateManyMutationInput = {
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ReviewUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
-  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ReviewListRelationFilter = {
@@ -377,12 +396,13 @@ export type ReviewUserIdEventIdCompoundUniqueInput = {
 
 export type ReviewCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
-  eventId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   editableUntil?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  eventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type ReviewAvgOrderByAggregateInput = {
@@ -391,22 +411,24 @@ export type ReviewAvgOrderByAggregateInput = {
 
 export type ReviewMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
-  eventId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   editableUntil?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  eventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type ReviewMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  userId?: Prisma.SortOrder
-  eventId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
   comment?: Prisma.SortOrder
   editableUntil?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  eventId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type ReviewSumOrderByAggregateInput = {
@@ -511,16 +533,18 @@ export type ReviewCreateWithoutUserInput = {
   comment: string
   editableUntil: Date | string
   createdAt?: Date | string
+  updatedAt?: Date | string
   event: Prisma.EventCreateNestedOneWithoutReviewsInput
 }
 
 export type ReviewUncheckedCreateWithoutUserInput = {
   id?: string
-  eventId: string
   rating: number
   comment: string
   editableUntil: Date | string
+  eventId: string
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type ReviewCreateOrConnectWithoutUserInput = {
@@ -554,12 +578,13 @@ export type ReviewScalarWhereInput = {
   OR?: Prisma.ReviewScalarWhereInput[]
   NOT?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
   id?: Prisma.StringFilter<"Review"> | string
-  userId?: Prisma.StringFilter<"Review"> | string
-  eventId?: Prisma.StringFilter<"Review"> | string
   rating?: Prisma.IntFilter<"Review"> | number
   comment?: Prisma.StringFilter<"Review"> | string
   editableUntil?: Prisma.DateTimeFilter<"Review"> | Date | string
+  userId?: Prisma.StringFilter<"Review"> | string
+  eventId?: Prisma.StringFilter<"Review"> | string
   createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Review"> | Date | string
 }
 
 export type ReviewCreateWithoutEventInput = {
@@ -568,16 +593,18 @@ export type ReviewCreateWithoutEventInput = {
   comment: string
   editableUntil: Date | string
   createdAt?: Date | string
+  updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutReviewsInput
 }
 
 export type ReviewUncheckedCreateWithoutEventInput = {
   id?: string
-  userId: string
   rating: number
   comment: string
   editableUntil: Date | string
+  userId: string
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type ReviewCreateOrConnectWithoutEventInput = {
@@ -608,11 +635,12 @@ export type ReviewUpdateManyWithWhereWithoutEventInput = {
 
 export type ReviewCreateManyUserInput = {
   id?: string
-  eventId: string
   rating: number
   comment: string
   editableUntil: Date | string
+  eventId: string
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type ReviewUpdateWithoutUserInput = {
@@ -621,34 +649,38 @@ export type ReviewUpdateWithoutUserInput = {
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   event?: Prisma.EventUpdateOneRequiredWithoutReviewsNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ReviewUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eventId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ReviewCreateManyEventInput = {
   id?: string
-  userId: string
   rating: number
   comment: string
   editableUntil: Date | string
+  userId: string
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type ReviewUpdateWithoutEventInput = {
@@ -657,76 +689,83 @@ export type ReviewUpdateWithoutEventInput = {
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutReviewsNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ReviewUncheckedUpdateManyWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.StringFieldUpdateOperationsInput | string
   rating?: Prisma.IntFieldUpdateOperationsInput | number
   comment?: Prisma.StringFieldUpdateOperationsInput | string
   editableUntil?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
 
 export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  userId?: boolean
-  eventId?: boolean
   rating?: boolean
   comment?: boolean
   editableUntil?: boolean
+  userId?: boolean
+  eventId?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
 export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  userId?: boolean
-  eventId?: boolean
   rating?: boolean
   comment?: boolean
   editableUntil?: boolean
+  userId?: boolean
+  eventId?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
 export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  userId?: boolean
-  eventId?: boolean
   rating?: boolean
   comment?: boolean
   editableUntil?: boolean
+  userId?: boolean
+  eventId?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
 export type ReviewSelectScalar = {
   id?: boolean
-  userId?: boolean
-  eventId?: boolean
   rating?: boolean
   comment?: boolean
   editableUntil?: boolean
+  userId?: boolean
+  eventId?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
 }
 
-export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "eventId" | "rating" | "comment" | "editableUntil" | "createdAt", ExtArgs["result"]["review"]>
+export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "rating" | "comment" | "editableUntil" | "userId" | "eventId" | "createdAt" | "updatedAt", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   event?: boolean | Prisma.EventDefaultArgs<ExtArgs>
@@ -748,12 +787,13 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    userId: string
-    eventId: string
     rating: number
     comment: string
     editableUntil: Date
+    userId: string
+    eventId: string
     createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["review"]>
   composites: {}
 }
@@ -1180,12 +1220,13 @@ export interface Prisma__ReviewClient<T, Null = never, ExtArgs extends runtime.T
  */
 export interface ReviewFieldRefs {
   readonly id: Prisma.FieldRef<"Review", 'String'>
-  readonly userId: Prisma.FieldRef<"Review", 'String'>
-  readonly eventId: Prisma.FieldRef<"Review", 'String'>
   readonly rating: Prisma.FieldRef<"Review", 'Int'>
   readonly comment: Prisma.FieldRef<"Review", 'String'>
   readonly editableUntil: Prisma.FieldRef<"Review", 'DateTime'>
+  readonly userId: Prisma.FieldRef<"Review", 'String'>
+  readonly eventId: Prisma.FieldRef<"Review", 'String'>
   readonly createdAt: Prisma.FieldRef<"Review", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Review", 'DateTime'>
 }
     
 

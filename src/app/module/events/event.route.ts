@@ -3,6 +3,7 @@ import { EventController } from "./event.controller";
 import authCheck from "../../middleware/authCheck";
 import { zodValidator } from "../../middleware/zodValidator";
 import { EventValidation } from "./event.validation";
+import optionalAuth from "../../middleware/optionalAuth";
 
 const router = Router();
 
@@ -27,15 +28,9 @@ router.get(
   EventController.getAllParticipants,
 );
 
-router.get(
-  "/:eventId/participants",
-  authCheck(),
-  EventController.getEventParticipants,
-);
-
 router.get("/:eventId/requests", authCheck(), EventController.getEventRequests);
 
-router.get("/:eventId", EventController.getSingleEvent);
+router.get("/:eventId", optionalAuth(), EventController.getSingleEvent);
 
 router.patch(
   "/:eventId",

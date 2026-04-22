@@ -60,8 +60,8 @@ const createCheckoutSession = async ({
       userId,
       invitationId: invitationId || "",
     },
-    success_url: `${envVars.FRONTEND_URL}/payment-success`,
-    cancel_url: `${envVars.FRONTEND_URL}/payment-failed`,
+    success_url: `${envVars.FRONTEND_URL}/dashboard/payments?status=success`,
+    cancel_url: `${envVars.FRONTEND_URL}/dashboard/payments?status=cancel`,
   });
 
   return {
@@ -183,9 +183,23 @@ const handleWebhook = async (event: Stripe.Event) => {
 
             const userData = await tx.user.findUnique({
               where: { id: userId },
-              select: { name: true },
             });
 
+            if (
+              !userData ||
+              userData.isDeleted ||
+              userData.status !== "ACTIVE"
+            ) {
+              await tx.payment.update({
+                where: { id: paymentId },
+                data: {
+                  status: "FAILED",
+                  stripeEventId: event.id,
+                },
+              });
+
+              return;
+            }
             const pdfBuffer = await generateInvoicePdf({
               invoiceId: paymentId,
               userName: userData?.name || "N/A",

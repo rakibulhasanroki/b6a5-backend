@@ -12,12 +12,20 @@ import {
   Visibility,
 } from "../../../generated/prisma/enums";
 import { PaymentService } from "../payment/payment.service";
+import { getEventStatus } from "../events/event.utils";
 
 const createBooking = async (userId: string, payload: CreateBookingPayload) => {
   const { eventId, invitationId } = payload;
 
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
+  const event = await prisma.event.findFirst({
+    where: {
+      id: eventId,
+      isDeleted: false,
+      organizer: {
+        isDeleted: false,
+        status: "ACTIVE",
+      },
+    },
   });
 
   if (!event || event.isDeleted) {
@@ -152,6 +160,10 @@ const getMyBookings = async (userId: string) => {
       userId,
       event: {
         isDeleted: false,
+        organizer: {
+          isDeleted: false,
+          status: "ACTIVE",
+        },
       },
     },
 
@@ -169,12 +181,21 @@ const getBookingById = async (userId: string, bookingId: string) => {
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
-      event: true,
+      event: {
+        include: {
+          organizer: true,
+        },
+      },
       payment: true,
     },
   });
 
-  if (!booking || booking.event.isDeleted) {
+  if (
+    !booking ||
+    booking.event.isDeleted ||
+    booking.event.organizer.isDeleted ||
+    booking.event.organizer.status !== "ACTIVE"
+  ) {
     throw new AppError(status.NOT_FOUND, "Booking not found");
   }
 
@@ -198,15 +219,9 @@ const updateBookingStatus = async (
   if (!booking) {
     throw new AppError(status.NOT_FOUND, "Booking not found");
   }
+
   if (booking.event.isDeleted) {
     throw new AppError(status.NOT_FOUND, "Event not found");
-  }
-
-  if (
-    booking.status === BookingStatus.BANNED ||
-    (booking.status === BookingStatus.CANCELLED && booking.userId === userId)
-  ) {
-    throw new AppError(status.BAD_REQUEST, "Cannot modify this booking");
   }
 
   const isOrganizer = booking.event.organizerId === userId;
@@ -215,7 +230,21 @@ const updateBookingStatus = async (
   if (!isOrganizer && !isParticipant) {
     throw new AppError(status.FORBIDDEN, "Not allowed");
   }
-  const isOngoing = booking.event.status === EventStatus.ONGOING;
+
+  const eventStatus = getEventStatus(
+    booking.event.startDateTime,
+    booking.event.endDateTime,
+  );
+
+  if (eventStatus === EventStatus.ENDED) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Cannot modify booking after event ended",
+    );
+  }
+
+  const isOngoing = eventStatus === EventStatus.ONGOING;
+
   if (isParticipant && !isOrganizer) {
     if (payload.status !== BookingStatus.CANCELLED) {
       throw new AppError(status.FORBIDDEN, "You can only cancel your booking");
@@ -227,25 +256,30 @@ const updateBookingStatus = async (
         "Cannot cancel booking after event started",
       );
     }
+
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw new AppError(status.BAD_REQUEST, "Booking already cancelled");
+    }
   }
 
   if (isOrganizer) {
+    if (payload.status === BookingStatus.CANCELLED) {
+      throw new AppError(status.BAD_REQUEST, "Organizer cannot cancel booking");
+    }
+
     if (
       payload.status !== BookingStatus.CONFIRMED &&
-      payload.status !== BookingStatus.CANCELLED &&
-      payload.status !== BookingStatus.BANNED
+      payload.status !== BookingStatus.BANNED &&
+      payload.status !== BookingStatus.PENDING
     ) {
       throw new AppError(
         status.BAD_REQUEST,
-        "Organizer can only confirm, cancel or ban",
+        "Organizer can only confirm, ban or reset to pending",
       );
     }
 
-    if (isOngoing && payload.status === BookingStatus.CANCELLED) {
-      throw new AppError(
-        status.BAD_REQUEST,
-        "Cannot cancel booking after event started",
-      );
+    if (isOngoing && payload.status === BookingStatus.BANNED) {
+      throw new AppError(status.BAD_REQUEST, "Cannot ban after event started");
     }
   }
 
@@ -258,8 +292,12 @@ const updateBookingStatus = async (
 };
 
 const getEventBookings = async (userId: string, eventId: string) => {
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
+  const event = await prisma.event.findFirst({
+    where: {
+      id: eventId,
+      isDeleted: false,
+      organizerId: userId,
+    },
   });
 
   if (!event || event.isDeleted) {

@@ -1,1 +1,4 @@
-export const allowedORigin = ["http://localhost:3000"];
+export const allowedORigin = [
+  "https://planora-event.vercel.app",
+  "http://localhost:3000",
+];

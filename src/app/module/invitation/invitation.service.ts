@@ -33,7 +33,11 @@ const sendInvitation = async (
     where: { id: invitedUserId },
   });
 
-  if (!invitedUser || invitedUser.isDeleted) {
+  if (
+    !invitedUser ||
+    invitedUser.isDeleted ||
+    invitedUser.status !== "ACTIVE"
+  ) {
     throw new AppError(status.NOT_FOUND, "User not found");
   }
 
@@ -64,7 +68,34 @@ const sendInvitation = async (
   });
 
   if (existing) {
-    throw new AppError(status.BAD_REQUEST, "User already invited");
+    if (existing.status === InvitationStatus.PENDING) {
+      throw new AppError(status.BAD_REQUEST, "User already invited");
+    }
+
+    if (existing.status === InvitationStatus.ACCEPTED) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "User already accepted the invitation",
+      );
+    }
+
+    if (existing.status === InvitationStatus.DECLINED) {
+      const updated = await prisma.invitation.updateMany({
+        where: {
+          id: existing.id,
+          status: InvitationStatus.DECLINED,
+        },
+        data: {
+          status: InvitationStatus.PENDING,
+        },
+      });
+
+      if (updated.count === 0) {
+        throw new AppError(status.BAD_REQUEST, "User already invited");
+      }
+
+      return true;
+    }
   }
 
   return prisma.invitation.create({
@@ -85,14 +116,7 @@ const getMyInvitations = async (userId: string) => {
       },
     },
     include: {
-      event: {
-        select: {
-          id: true,
-          title: true,
-          fee: true,
-          visibility: true,
-        },
-      },
+      event: true,
     },
     orderBy: {
       createdAt: "desc",

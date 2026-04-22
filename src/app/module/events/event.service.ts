@@ -8,6 +8,7 @@ import {
   UpdateEventPayload,
 } from "./event.interface";
 import { BookingStatus } from "../../../generated/prisma/enums";
+import { getEventStatus } from "./event.utils";
 
 const createEvent = async (userId: string, payload: CreateEventPayload) => {
   const existingEvent = await prisma.event.findFirst({
@@ -41,7 +42,10 @@ const createEvent = async (userId: string, payload: CreateEventPayload) => {
     },
   });
 
-  return event;
+  return {
+    ...event,
+    status: getEventStatus(event.startDateTime, event.endDateTime),
+  };
 };
 
 const getEvents = async (query: IGetEventsQuery) => {
@@ -53,7 +57,7 @@ const getEvents = async (query: IGetEventsQuery) => {
     startDate,
     endDate,
     sortBy = "createdAt",
-    sortOrder = "asc",
+    sortOrder = "desc",
     status,
     page = 1,
     limit = 10,
@@ -61,6 +65,10 @@ const getEvents = async (query: IGetEventsQuery) => {
 
   const where: any = {
     isDeleted: false,
+    organizer: {
+      isDeleted: false,
+      status: "ACTIVE",
+    },
   };
 
   if (search) {
@@ -88,14 +96,34 @@ const getEvents = async (query: IGetEventsQuery) => {
   if (feeType === "FREE") where.fee = 0;
   if (feeType === "PAID") where.fee = { gt: 0 };
 
-  if (status) {
-    where.status = status;
+  const now = new Date();
+
+  if (status === "UPCOMING") {
+    where.AND = [...(where.AND || []), { startDateTime: { gt: now } }];
   }
+
+  if (status === "ONGOING") {
+    where.AND = [
+      ...(where.AND || []),
+      { startDateTime: { lte: now } },
+      { endDateTime: { gte: now } },
+    ];
+  }
+
+  if (status === "ENDED") {
+    where.AND = [...(where.AND || []), { endDateTime: { lt: now } }];
+  }
+
   if (startDate || endDate) {
-    where.startDateTime = {
-      ...(startDate && { gte: new Date(startDate) }),
-      ...(endDate && { lte: new Date(endDate) }),
-    };
+    where.AND = [
+      ...(where.AND || []),
+      {
+        startDateTime: {
+          ...(startDate && { gte: new Date(startDate) }),
+          ...(endDate && { lte: new Date(endDate) }),
+        },
+      },
+    ];
   }
 
   const skip = (Number(page) - 1) * Number(limit);
@@ -120,6 +148,42 @@ const getEvents = async (query: IGetEventsQuery) => {
     prisma.event.count({ where }),
   ]);
 
+  const eventIds = events.map((e) => e.id);
+
+  const bookingCounts = await prisma.booking.groupBy({
+    by: ["eventId"],
+    where: {
+      eventId: { in: eventIds },
+      status: {
+        notIn: [BookingStatus.CANCELLED, BookingStatus.BANNED],
+      },
+    },
+    _count: {
+      eventId: true,
+    },
+  });
+
+  const countMap = new Map(
+    bookingCounts.map((b) => [b.eventId, b._count.eventId]),
+  );
+
+  const enrichedEvents = events.map((event) => {
+    const currentParticipants = countMap.get(event.id) || 0;
+    const max = event.maxParticipants;
+
+    const isFull = max ? currentParticipants >= max : false;
+    const spotsLeft = max ? Math.max(max - currentParticipants, 0) : null;
+
+    return {
+      ...event,
+      status: getEventStatus(event.startDateTime, event.endDateTime),
+
+      currentParticipants,
+      isFull,
+      spotsLeft,
+    };
+  });
+
   return {
     meta: {
       page: Number(page),
@@ -127,7 +191,7 @@ const getEvents = async (query: IGetEventsQuery) => {
       total,
       totalPages: Math.ceil(total / Number(limit)),
     },
-    data: events,
+    data: enrichedEvents,
   };
 };
 
@@ -155,6 +219,40 @@ const getMyEvents = async (userId: string, query: any) => {
       },
     }),
   ]);
+  const eventIds = events.map((e) => e.id);
+
+  const bookingCounts = await prisma.booking.groupBy({
+    by: ["eventId"],
+    where: {
+      eventId: { in: eventIds },
+      status: {
+        notIn: [BookingStatus.CANCELLED, BookingStatus.BANNED],
+      },
+    },
+    _count: {
+      eventId: true,
+    },
+  });
+
+  const countMap = new Map(
+    bookingCounts.map((b) => [b.eventId, b._count.eventId]),
+  );
+
+  const enrichedEvents = events.map((event) => {
+    const currentParticipants = countMap.get(event.id) || 0;
+    const max = event.maxParticipants;
+
+    const isFull = max ? currentParticipants >= max : false;
+    const spotsLeft = max ? Math.max(max - currentParticipants, 0) : null;
+
+    return {
+      ...event,
+      status: getEventStatus(event.startDateTime, event.endDateTime),
+      currentParticipants,
+      isFull,
+      spotsLeft,
+    };
+  });
 
   return {
     meta: {
@@ -163,15 +261,19 @@ const getMyEvents = async (userId: string, query: any) => {
       total,
       totalPages: Math.ceil(total / Number(limit)),
     },
-    data: events,
+    data: enrichedEvents,
   };
 };
 
-const getSingleEvent = async (eventId: string) => {
+const getSingleEvent = async (eventId: string, userId?: string) => {
   const event = await prisma.event.findFirst({
     where: {
       id: eventId,
       isDeleted: false,
+      organizer: {
+        isDeleted: false,
+        status: "ACTIVE",
+      },
     },
     include: {
       organizer: {
@@ -187,7 +289,43 @@ const getSingleEvent = async (eventId: string) => {
     throw new AppError(status.NOT_FOUND, "Event not found");
   }
 
-  return event;
+  const currentParticipants = await prisma.booking.count({
+    where: {
+      eventId,
+      status: {
+        notIn: [BookingStatus.CANCELLED, BookingStatus.BANNED],
+      },
+    },
+  });
+
+  const max = event.maxParticipants;
+
+  const isFull = max ? currentParticipants >= max : false;
+  const spotsLeft = max ? Math.max(max - currentParticipants, 0) : null;
+
+  let isParticipant = false;
+
+  if (userId) {
+    const booking = await prisma.booking.findFirst({
+      where: {
+        userId,
+        eventId,
+      },
+      select: { id: true },
+    });
+
+    isParticipant = !!booking;
+  }
+
+  return {
+    ...event,
+    status: getEventStatus(event.startDateTime, event.endDateTime),
+    isParticipant,
+
+    currentParticipants,
+    isFull,
+    spotsLeft,
+  };
 };
 const getAllParticipants = async (userId: string) => {
   const events = await prisma.event.findMany({
@@ -235,46 +373,6 @@ const getAllParticipants = async (userId: string) => {
   }
 
   return Array.from(uniqueMap.values());
-};
-
-const getEventParticipants = async (userId: string, eventId: string) => {
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
-  });
-
-  if (!event || event.isDeleted) {
-    throw new AppError(status.NOT_FOUND, "Event not found");
-  }
-
-  if (event.organizerId !== userId) {
-    throw new AppError(status.FORBIDDEN, "Not allowed");
-  }
-
-  const participants = await prisma.booking.findMany({
-    where: {
-      eventId,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-      event: {
-        select: {
-          id: true,
-          title: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return participants;
 };
 
 const getEventRequests = async (userId: string, eventId: string) => {
@@ -331,46 +429,39 @@ const updateEvent = async (
 
   const now = new Date();
 
-  if (event.status === "ENDED") {
+  const currentStatus = getEventStatus(event.startDateTime, event.endDateTime);
+
+  if (currentStatus === "ENDED") {
     throw new AppError(
       status.BAD_REQUEST,
       "Cannot update event after it has ended",
     );
   }
 
+  if (payload.status === "UPCOMING" && currentStatus !== "UPCOMING") {
+    throw new AppError(status.BAD_REQUEST, "Cannot revert to UPCOMING");
+  }
+
   if (
-    payload.status === "UPCOMING" &&
+    payload.status === "ONGOING" &&
     event.startDateTime &&
-    now >= event.startDateTime
+    now < event.startDateTime
   ) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Cannot revert to UPCOMING after event has started",
-    );
+    throw new AppError(status.BAD_REQUEST, "Event has not started yet");
   }
 
-  if (payload.status) {
-    if (
-      payload.status === "ONGOING" &&
-      event.startDateTime &&
-      now < event.startDateTime
-    ) {
-      throw new AppError(status.BAD_REQUEST, "Event has not started yet");
-    }
-
-    if (
-      payload.status === "ENDED" &&
-      event.endDateTime &&
-      now < event.endDateTime
-    ) {
-      throw new AppError(status.BAD_REQUEST, "Event has not ended yet");
-    }
+  if (
+    payload.status === "ENDED" &&
+    event.endDateTime &&
+    now < event.endDateTime
+  ) {
+    throw new AppError(status.BAD_REQUEST, "Event has not ended yet");
   }
 
-  if (payload.startDateTime && event.status === "ONGOING") {
+  if (payload.startDateTime && currentStatus !== "UPCOMING") {
     throw new AppError(
       status.BAD_REQUEST,
-      "Cannot change start time once event is ongoing",
+      "Cannot change start time after event has started",
     );
   }
 
@@ -410,11 +501,12 @@ const updateEvent = async (
       "Meeting link is required for ONLINE event",
     );
   }
-
+  const { status: _status, ...rest } = payload;
+  void _status;
   const updated = await prisma.event.update({
     where: { id: eventId },
     data: {
-      ...payload,
+      ...rest,
 
       ...(payload.startDateTime && {
         startDateTime: new Date(payload.startDateTime),
@@ -425,7 +517,10 @@ const updateEvent = async (
     },
   });
 
-  return updated;
+  return {
+    ...updated,
+    status: getEventStatus(updated.startDateTime, updated.endDateTime),
+  };
 };
 
 const deleteEvent = async (userId: string, eventId: string) => {
@@ -439,6 +534,15 @@ const deleteEvent = async (userId: string, eventId: string) => {
 
   if (event.organizerId !== userId) {
     throw new AppError(status.FORBIDDEN, "Not allowed");
+  }
+
+  const eventStatus = getEventStatus(event.startDateTime, event.endDateTime);
+
+  if (eventStatus !== "UPCOMING") {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Only upcoming events can be deleted",
+    );
   }
 
   await prisma.event.update({
@@ -494,6 +598,25 @@ const getJoinedEvents = async (userId: string, query: any) => {
     }),
   ]);
 
+  const eventIds = bookings.map((b) => b.event.id);
+
+  const bookingCounts = await prisma.booking.groupBy({
+    by: ["eventId"],
+    where: {
+      eventId: { in: eventIds },
+      status: {
+        notIn: [BookingStatus.CANCELLED, BookingStatus.BANNED],
+      },
+    },
+    _count: {
+      eventId: true,
+    },
+  });
+
+  const countMap = new Map(
+    bookingCounts.map((b) => [b.eventId, b._count.eventId]),
+  );
+
   return {
     meta: {
       page: Number(page),
@@ -501,10 +624,22 @@ const getJoinedEvents = async (userId: string, query: any) => {
       total,
       totalPages: Math.ceil(total / Number(limit)),
     },
-    data: bookings.map((b) => ({
-      ...b.event,
-      bookingStatus: b.status,
-    })),
+    data: bookings.map((b) => {
+      const currentParticipants = countMap.get(b.event.id) || 0;
+      const max = b.event.maxParticipants;
+
+      const isFull = max ? currentParticipants >= max : false;
+      const spotsLeft = max ? Math.max(max - currentParticipants, 0) : null;
+
+      return {
+        ...b.event,
+        status: getEventStatus(b.event.startDateTime, b.event.endDateTime),
+        bookingStatus: b.status,
+        currentParticipants,
+        isFull,
+        spotsLeft,
+      };
+    }),
   };
 };
 
@@ -515,7 +650,6 @@ export const EventService = {
   getSingleEvent,
   getAllParticipants,
   getEventRequests,
-  getEventParticipants,
   updateEvent,
   deleteEvent,
   getJoinedEvents,

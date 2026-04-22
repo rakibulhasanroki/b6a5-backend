@@ -7,14 +7,12 @@ import path from "path";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFound } from "./app/middleware/notFound";
 import { Routes } from "./app/routes";
-import { startEventStatusCron } from "./app/corn/eventStatus.corn";
 import { PaymentController } from "./app/module/payment/payment.controller";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./app/lib/auth";
 
 const app: Application = express();
-app.set("view engine", "ejs");
-app.set("views", path.resolve(process.cwd(), `src/app/templates`));
+app.set("trust proxy", 1);
 
 // payment
 app.post(
@@ -50,15 +48,12 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // 🏠 Health check route
-app.get("/", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "../../public/index.html"));
-});
 
+app.get("/", (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), "public", "index.html"));
+});
 // Api routes
 app.use("/api/v1", Routes);
-
-// corn
-startEventStatusCron();
 
 // notFound middleware
 app.use(notFound);

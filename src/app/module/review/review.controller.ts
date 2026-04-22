@@ -79,10 +79,30 @@ const getMyReviews = catchAsync(async (req, res) => {
   });
 });
 
+const getMyEventReview = catchAsync(async (req, res) => {
+  const user = req.user;
+  if (!user) throw new AppError(status.UNAUTHORIZED, "Unauthorized");
+
+  const { eventId } = req.params;
+
+  const result = await ReviewService.getMyEventReview(
+    user.id,
+    eventId as string,
+  );
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "My event review fetched successfully",
+    data: result,
+  });
+});
+
 export const ReviewController = {
   createReview,
   updateReview,
   deleteReview,
   getEventReviews,
   getMyReviews,
+  getMyEventReview,
 };

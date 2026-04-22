@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { envVars } from "../config/env";
+import { allowedORigin } from "../config";
 
 export const auth = betterAuth({
   baseURL: envVars.BETTER_AUTH_URL!,
@@ -9,12 +10,15 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  trustedOrigins: allowedORigin,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
   },
   socialProviders: {
     google: {
+      redirectURI: `${envVars.FRONTEND_URL}/api/auth/callback/google`,
+      prompt: "select_account",
       clientId: envVars.GOOGLE.CLIENT_ID!,
       clientSecret: envVars.GOOGLE.CLIENT_SECRET!,
     },
@@ -57,6 +61,15 @@ export const auth = betterAuth({
         type: "date",
         required: false,
       },
+    },
+  },
+  advanced: {
+    cookiePrefix: "better-auth",
+    useSecureCookies: envVars.NODE_ENV === "production",
+    defaultCookieAttributes: {
+      secure: envVars.NODE_ENV === "production",
+      sameSite: envVars.NODE_ENV === "production" ? "none" : "lax",
+      httpOnly: envVars.NODE_ENV === "production",
     },
   },
 });

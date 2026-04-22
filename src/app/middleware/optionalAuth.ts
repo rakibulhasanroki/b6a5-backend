@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../lib/prisma";
 import { Role, UserStatus } from "../../generated/prisma/enums";
 import { auth } from "../lib/auth";
-import AppError from "../errorHelpers/AppError";
-import status from "http-status";
 import { toHeaders } from "../utils/toHeaders";
+import { prisma } from "../lib/prisma";
 
-const authCheck =
+const optionalAuth =
   (...roles: Role[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -14,35 +12,28 @@ const authCheck =
         headers: toHeaders(req.headers),
       });
 
-      if (!session?.user) {
-        throw new AppError(status.UNAUTHORIZED, "Unauthorized access");
-      }
+      if (!session?.user) return next();
 
       const user = await prisma.user.findUnique({
         where: { id: session.user.id },
       });
 
-      if (!user) {
-        throw new AppError(status.NOT_FOUND, "User not found");
-      }
+      if (!user) return next();
 
       if (user.status === UserStatus.INACTIVE || user.isDeleted) {
-        throw new AppError(status.FORBIDDEN, "User is  deleted and inactive");
+        return next();
       }
 
       if (roles.length && !roles.includes(user.role)) {
-        throw new AppError(
-          status.FORBIDDEN,
-          "Forbidden! You don't have access",
-        );
+        return next();
       }
 
       req.user = user;
 
       next();
-    } catch (error) {
-      next(error);
+    } catch {
+      next();
     }
   };
 
-export default authCheck;
+export default optionalAuth;

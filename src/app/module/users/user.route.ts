@@ -10,6 +10,7 @@ import { Role } from "../../../generated/prisma/enums";
 const router = Router();
 
 router.get("/me", authCheck(), UsersController.getMe);
+router.get("/stats", authCheck(), UsersController.getUserStats);
 router.get(
   "/",
   authCheck(Role.ADMIN),

@@ -15,7 +15,9 @@ const createReview = async (userId: string, payload: CreateReviewPayload) => {
     throw new AppError(status.NOT_FOUND, "Event not found");
   }
 
-  if (event.status !== "ENDED") {
+  const now = new Date();
+
+  if (!event.endDateTime || now < event.endDateTime) {
     throw new AppError(status.BAD_REQUEST, "Cannot review before event ends");
   }
 
@@ -115,7 +117,12 @@ const getEventReviews = async (eventId: string, query: any) => {
 
   const [reviews, total, stats] = await Promise.all([
     prisma.review.findMany({
-      where: { eventId },
+      where: {
+        eventId,
+        event: {
+          isDeleted: false,
+        },
+      },
       include: {
         user: {
           select: {
@@ -159,17 +166,44 @@ const getMyReviews = async (userId: string) => {
   return prisma.review.findMany({
     where: { userId },
     include: {
-      event: {
-        select: {
-          id: true,
-          title: true,
-        },
-      },
+      event: true,
     },
+
     orderBy: {
       createdAt: "desc",
     },
   });
+};
+
+const getMyEventReview = async (userId: string, eventId: string) => {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+  });
+
+  if (!event || event.isDeleted) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: {
+      userId_eventId: { userId, eventId },
+    },
+  });
+
+  if (!booking) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "You are not allowed to access this review",
+    );
+  }
+
+  const review = await prisma.review.findUnique({
+    where: {
+      userId_eventId: { userId, eventId },
+    },
+  });
+
+  return review || null;
 };
 
 export const ReviewService = {
@@ -178,4 +212,5 @@ export const ReviewService = {
   deleteReview,
   getEventReviews,
   getMyReviews,
+  getMyEventReview,
 };

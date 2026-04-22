@@ -42,6 +42,7 @@ const deleteUser = async (userId: string, currentUserId: string) => {
   if (userId === currentUserId) {
     throw new AppError(status.BAD_REQUEST, "You cannot delete yourself");
   }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -50,13 +51,21 @@ const deleteUser = async (userId: string, currentUserId: string) => {
     throw new AppError(status.NOT_FOUND, "User not found");
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      isDeleted: true,
-      deletedAt: new Date(),
-    },
-  });
+  await prisma.$transaction([
+    // 1. mark as deleted
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        status: "INACTIVE",
+      },
+    }),
+
+    prisma.session.deleteMany({
+      where: { userId },
+    }),
+  ]);
 
   return true;
 };

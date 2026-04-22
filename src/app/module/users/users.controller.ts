@@ -42,8 +42,20 @@ const updateMe = catchAsync(async (req, res) => {
   });
 });
 
+const getUserStats = catchAsync(async (req, res) => {
+  const result = await UsersService.getUserStats(req.user as Express.User);
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "User stats fetched successfully",
+    data: result,
+  });
+});
+
 export const UsersController = {
   getMe,
   getAllUsers,
   updateMe,
+  getUserStats,
 };

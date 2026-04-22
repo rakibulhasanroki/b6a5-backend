@@ -25,10 +25,6 @@ router.post(
   AuthController.changePassword,
 );
 
-router.post("/logout", authCheck(), AuthController.logout);
-
-// Google
-router.get("/google", AuthController.googleLogin);
 router.get("/google/callback", AuthController.googleCallback);
 
 export const AuthRoutes = router;

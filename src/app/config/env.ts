@@ -4,7 +4,7 @@ dotenv.config();
 
 interface EnvConfig {
   NODE_ENV: string;
-  PORT: string;
+  PORT?: string;
   DATABASE_URL: string;
   BETTER_AUTH_URL: string;
   BETTER_AUTH_SECRET: string;
@@ -24,16 +24,15 @@ interface EnvConfig {
     CLIENT_SECRET: string;
   };
   ADMIN: {
-    NAME: string;
-    EMAIL: string;
-    PASSWORD: string;
+    NAME?: string;
+    EMAIL?: string;
+    PASSWORD?: string;
   };
 }
 
 const loadEnv = (): EnvConfig => {
   const requiredEnvVars = [
     "NODE_ENV",
-    "PORT",
     "DATABASE_URL",
     "BETTER_AUTH_URL",
     "BETTER_AUTH_SECRET",
@@ -46,9 +45,6 @@ const loadEnv = (): EnvConfig => {
     "BACKEND_URL",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
-    "ADMIN_NAME",
-    "ADMIN_EMAIL",
-    "ADMIN_PASSWORD",
   ];
 
   for (const varName of requiredEnvVars) {
@@ -58,9 +54,10 @@ const loadEnv = (): EnvConfig => {
       );
     }
   }
+
   return {
     NODE_ENV: process.env.NODE_ENV as string,
-    PORT: process.env.PORT as string,
+    PORT: process.env.PORT || "5000",
     DATABASE_URL: process.env.DATABASE_URL as string,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL as string,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET as string,
@@ -80,9 +77,9 @@ const loadEnv = (): EnvConfig => {
       CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
     },
     ADMIN: {
-      NAME: process.env.ADMIN_NAME as string,
-      EMAIL: process.env.ADMIN_EMAIL as string,
-      PASSWORD: process.env.ADMIN_PASSWORD as string,
+      NAME: process.env.ADMIN_NAME,
+      EMAIL: process.env.ADMIN_EMAIL,
+      PASSWORD: process.env.ADMIN_PASSWORD,
     },
   };
 };

@@ -1245,12 +1245,13 @@ export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeo
 
 export const ReviewScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
-  eventId: 'eventId',
   rating: 'rating',
   comment: 'comment',
   editableUntil: 'editableUntil',
-  createdAt: 'createdAt'
+  userId: 'userId',
+  eventId: 'eventId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]

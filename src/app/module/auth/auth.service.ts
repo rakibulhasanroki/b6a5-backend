@@ -6,9 +6,11 @@ import { LoginPayload, RegisterPayload } from "./auth.interface";
 const registerUser = async (payload: RegisterPayload) => {
   const data = await auth.api.signUpEmail({
     body: payload,
+    returnHeaders: true,
   });
 
-  if (!data.user) {
+  const user = data.response?.user;
+  if (!user) {
     throw new AppError(status.BAD_REQUEST, "Registration failed");
   }
 
@@ -22,8 +24,20 @@ const loginUser = async (payload: LoginPayload, headers: Headers) => {
     returnHeaders: true,
   });
 
-  if (!data.response?.user) {
+  const user = data.response?.user;
+
+  if (!user) {
     throw new AppError(status.BAD_REQUEST, "Invalid credentials");
+  }
+
+  if (user.isDeleted) {
+    await auth.api.signOut({ headers });
+    throw new AppError(status.FORBIDDEN, "ACCOUNT_DELETED");
+  }
+
+  if (user.status !== "ACTIVE") {
+    await auth.api.signOut({ headers });
+    throw new AppError(status.FORBIDDEN, "ACCOUNT_INACTIVE");
   }
 
   return data;
@@ -33,20 +47,17 @@ const changePassword = async (
   payload: { currentPassword: string; newPassword: string },
   headers: Headers,
 ) => {
-  await auth.api.changePassword({
+  const data = await auth.api.changePassword({
     body: {
       currentPassword: payload.currentPassword,
       newPassword: payload.newPassword,
       revokeOtherSessions: true,
     },
     headers,
+    returnHeaders: true,
   });
-};
 
-const logout = async (headers: Headers) => {
-  await auth.api.signOut({
-    headers,
-  });
+  return data;
 };
 
 const googleCallback = async (headers: Headers) => {
@@ -55,15 +66,21 @@ const googleCallback = async (headers: Headers) => {
     returnHeaders: true,
   });
 
-  if (!data.response?.user) {
+  const user = data.response?.user;
+
+  if (!user) {
     throw new AppError(status.UNAUTHORIZED, "Google login failed");
   }
 
-  if (!data.response.user.emailVerified) {
+  if (user.isDeleted || user.status !== "ACTIVE") {
+    await auth.api.signOut({ headers });
+
+    throw new AppError(status.FORBIDDEN, "ACCOUNT_INACTIVE");
+  }
+
+  if (!user.emailVerified) {
     await auth.api.updateUser({
-      body: {
-        emailVerified: true,
-      },
+      body: { emailVerified: true },
       headers,
     });
   }
@@ -75,6 +92,5 @@ export const AuthService = {
   registerUser,
   loginUser,
   changePassword,
-  logout,
   googleCallback,
 };

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/server.js",
-    "build": "tsc -p .",
+    "build": "prisma generate && tsup src/server.ts --format esm --platform node --target node20 --outDir dist --clean && cp -r public dist/public",
     "lint": "eslint src/**/*.ts",
     "dev": "tsx watch src/server.ts",
     "generate": "prisma generate",
@@ -55,6 +55,7 @@
     "@types/streamifier": "^0.1.2",
     "eslint": "^10.1.0",
     "prisma": "^7.5.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.57.2"
