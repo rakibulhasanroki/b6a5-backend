@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../lib/prisma";
 import AppError from "../../errorHelpers/AppError";
 import status from "http-status";
@@ -9,15 +10,45 @@ const getMe = async (user: Express.User) => {
 };
 
 const getAllUsers = async (query: IGetUsersQuery) => {
-  const { page, limit } = query;
+  const {
+    page = 1,
+    limit = 10,
+    search,
+    role,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = query;
 
   const skip = (Number(page) - 1) * Number(limit);
 
+  const where: any = {
+    isDeleted: false,
+  };
+
+  if (search) {
+    where.OR = [
+      {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        email: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    ];
+  }
+
+  if (role) {
+    where.role = role;
+  }
+
   const [users, total] = await Promise.all([
     prisma.user.findMany({
-      where: {
-        isDeleted: false,
-      },
+      where,
       select: {
         id: true,
         name: true,
@@ -29,27 +60,21 @@ const getAllUsers = async (query: IGetUsersQuery) => {
         createdAt: true,
       },
       orderBy: {
-        createdAt: "desc",
+        [sortBy]: sortOrder,
       },
       skip,
       take: Number(limit),
     }),
 
-    prisma.user.count({
-      where: {
-        isDeleted: false,
-      },
-    }),
+    prisma.user.count({ where }),
   ]);
-
-  const totalPages = Math.ceil(total / Number(limit));
 
   return {
     meta: {
       page: Number(page),
       limit: Number(limit),
       total,
-      totalPages,
+      totalPages: Math.ceil(total / Number(limit)),
     },
     data: users,
   };

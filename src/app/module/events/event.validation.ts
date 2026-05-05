@@ -5,6 +5,7 @@ const dateField = z.string();
 const baseEventSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
+  image: z.url().optional(),
 
   startDateTime: dateField.optional(),
   endDateTime: dateField.optional(),
@@ -118,7 +119,9 @@ const getEventsQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(50).default(10),
 
-  sortBy: z.enum(["startDateTime", "createdAt"]).default("startDateTime"),
+  sortBy: z
+    .enum(["startDateTime", "createdAt", "fee"])
+    .default("startDateTime"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
   status: z.enum(["UPCOMING", "ONGOING", "ENDED"]).optional(),
 

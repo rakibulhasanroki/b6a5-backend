@@ -4,12 +4,16 @@ import authCheck from "../../middleware/authCheck";
 import { zodValidator } from "../../middleware/zodValidator";
 import { EventValidation } from "./event.validation";
 import optionalAuth from "../../middleware/optionalAuth";
+import { createEventMiddleware } from "./event.middleware";
+import { upload } from "../../config/multer.config";
 
 const router = Router();
 
 router.post(
   "/",
   authCheck(),
+  upload.single("image"),
+  createEventMiddleware,
   zodValidator(EventValidation.createEventSchema),
   EventController.createEvent,
 );
@@ -29,7 +33,7 @@ router.get(
 );
 
 router.get("/:eventId/requests", authCheck(), EventController.getEventRequests);
-
+router.get("/:eventId/related", EventController.getRelatedEvents);
 router.get("/:eventId", optionalAuth(), EventController.getSingleEvent);
 
 router.patch(

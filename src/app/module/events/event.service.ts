@@ -31,6 +31,7 @@ const createEvent = async (userId: string, payload: CreateEventPayload) => {
   const event = await prisma.event.create({
     data: {
       ...payload,
+      ...(payload.image && { image: payload.image }),
       startDateTime: payload.startDateTime
         ? new Date(payload.startDateTime)
         : undefined,
@@ -196,29 +197,52 @@ const getEvents = async (query: IGetEventsQuery) => {
 };
 
 const getMyEvents = async (userId: string, query: any) => {
-  const { page = 1, limit = 10 } = query;
+  const { page = 1, limit = 10, search, status } = query;
+
+  const where: any = {
+    organizerId: userId,
+    isDeleted: false,
+  };
+
+  if (search) {
+    where.title = {
+      contains: search,
+      mode: "insensitive",
+    };
+  }
+
+  const now = new Date();
+
+  if (status === "UPCOMING") {
+    where.AND = [...(where.AND || []), { startDateTime: { gt: now } }];
+  }
+
+  if (status === "ONGOING") {
+    where.AND = [
+      ...(where.AND || []),
+      { startDateTime: { lte: now } },
+      { endDateTime: { gte: now } },
+    ];
+  }
+
+  if (status === "ENDED") {
+    where.AND = [...(where.AND || []), { endDateTime: { lt: now } }];
+  }
 
   const skip = (Number(page) - 1) * Number(limit);
 
   const [events, total] = await Promise.all([
     prisma.event.findMany({
-      where: {
-        organizerId: userId,
-        isDeleted: false,
-      },
+      where,
       orderBy: {
         createdAt: "desc",
       },
       skip,
       take: Number(limit),
     }),
-    prisma.event.count({
-      where: {
-        organizerId: userId,
-        isDeleted: false,
-      },
-    }),
+    prisma.event.count({ where }),
   ]);
+
   const eventIds = events.map((e) => e.id);
 
   const bookingCounts = await prisma.booking.groupBy({
@@ -557,18 +581,50 @@ const deleteEvent = async (userId: string, eventId: string) => {
 };
 
 const getJoinedEvents = async (userId: string, query: any) => {
-  const { page = 1, limit = 10 } = query;
+  const { page = 1, limit = 10, search, status } = query;
 
   const skip = (Number(page) - 1) * Number(limit);
 
+  const where: any = {
+    userId,
+    event: {
+      isDeleted: false,
+      ...(search && {
+        title: {
+          contains: search,
+          mode: "insensitive",
+        },
+      }),
+    },
+  };
+
+  const now = new Date();
+
+  if (status === "UPCOMING") {
+    where.event.AND = [
+      ...(where.event.AND || []),
+      { startDateTime: { gt: now } },
+    ];
+  }
+
+  if (status === "ONGOING") {
+    where.event.AND = [
+      ...(where.event.AND || []),
+      { startDateTime: { lte: now } },
+      { endDateTime: { gte: now } },
+    ];
+  }
+
+  if (status === "ENDED") {
+    where.event.AND = [
+      ...(where.event.AND || []),
+      { endDateTime: { lt: now } },
+    ];
+  }
+
   const [bookings, total] = await Promise.all([
     prisma.booking.findMany({
-      where: {
-        userId,
-        event: {
-          isDeleted: false,
-        },
-      },
+      where,
       include: {
         event: {
           include: {
@@ -588,14 +644,7 @@ const getJoinedEvents = async (userId: string, query: any) => {
       take: Number(limit),
     }),
 
-    prisma.booking.count({
-      where: {
-        userId,
-        event: {
-          isDeleted: false,
-        },
-      },
-    }),
+    prisma.booking.count({ where }),
   ]);
 
   const eventIds = bookings.map((b) => b.event.id);
@@ -643,6 +692,64 @@ const getJoinedEvents = async (userId: string, query: any) => {
   };
 };
 
+const getRelatedEvents = async (eventId: string) => {
+  const baseEvent = await prisma.event.findFirst({
+    where: {
+      id: eventId,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      organizerId: true,
+    },
+  });
+
+  if (!baseEvent) {
+    throw new AppError(status.NOT_FOUND, "Event not found");
+  }
+
+  const now = new Date();
+
+  const events = await prisma.event.findMany({
+    where: {
+      id: { not: eventId },
+      isDeleted: false,
+
+      organizerId: baseEvent.organizerId,
+
+      startDateTime: {
+        gte: now,
+      },
+
+      organizer: {
+        isDeleted: false,
+        status: "ACTIVE",
+      },
+    },
+
+    orderBy: {
+      startDateTime: "asc",
+    },
+
+    take: 4,
+
+    select: {
+      id: true,
+      title: true,
+      image: true,
+      fee: true,
+      startDateTime: true,
+      organizer: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return events;
+};
+
 export const EventService = {
   createEvent,
   getEvents,
@@ -653,4 +760,5 @@ export const EventService = {
   updateEvent,
   deleteEvent,
   getJoinedEvents,
+  getRelatedEvents,
 };

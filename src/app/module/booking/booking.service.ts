@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import status from "http-status";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
@@ -154,27 +155,59 @@ const createBooking = async (userId: string, payload: CreateBookingPayload) => {
   });
 };
 
-const getMyBookings = async (userId: string) => {
-  return prisma.booking.findMany({
-    where: {
-      userId,
-      event: {
+const getMyBookings = async (
+  userId: string,
+  query: {
+    page?: number;
+    limit?: number;
+    status?: "CONFIRMED" | "PENDING" | "CANCELLED" | "BANNED";
+  },
+) => {
+  const { page = 1, limit = 10, status } = query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const where: any = {
+    userId,
+    event: {
+      isDeleted: false,
+      organizer: {
         isDeleted: false,
-        organizer: {
-          isDeleted: false,
-          status: "ACTIVE",
-        },
+        status: "ACTIVE",
       },
     },
+  };
 
-    include: {
-      event: true,
-      payment: true,
+  if (status) {
+    where.status = status;
+  }
+
+  const [bookings, total] = await Promise.all([
+    prisma.booking.findMany({
+      where,
+      include: {
+        event: true,
+        payment: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: Number(limit),
+    }),
+
+    prisma.booking.count({ where }),
+  ]);
+
+  return {
+    meta: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / Number(limit)),
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    data: bookings,
+  };
 };
 
 const getBookingById = async (userId: string, bookingId: string) => {

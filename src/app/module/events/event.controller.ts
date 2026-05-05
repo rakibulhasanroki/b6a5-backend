@@ -150,6 +150,19 @@ const getJoinedEvents = catchAsync(async (req, res) => {
   });
 });
 
+const getRelatedEvents = catchAsync(async (req, res) => {
+  const eventId = req.params.eventId;
+
+  const result = await EventService.getRelatedEvents(eventId as string);
+
+  sendResponse(res, {
+    httpStatus: status.OK,
+    success: true,
+    message: "Related events fetched successfully",
+    data: result,
+  });
+});
+
 export const EventController = {
   createEvent,
   getEvents,
@@ -157,8 +170,8 @@ export const EventController = {
   getSingleEvent,
   getAllParticipants,
   getEventRequests,
-
   updateEvent,
   deleteEvent,
   getJoinedEvents,
+  getRelatedEvents,
 };

@@ -1,7 +1,8 @@
 model Event {
-    id          String @id @default(uuid())
+    id          String  @id @default(uuid())
     title       String
     description String
+    image       String?
 
     startDateTime DateTime?
     endDateTime   DateTime?
